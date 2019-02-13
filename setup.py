@@ -18,7 +18,8 @@ setup_requires = ['pytest-runner']
 tests_require = ['pytest', 'coverage']
 install_requires = ['numpy>=1.13',
                     'matplotlib>=2.1',
-                    'openturns']
+                    # 'openturns'
+                    ]
 extras_require = {'doc': ['sphinx>=1.4', 'nbsphinx', 'jupyter', 'jupyter_client']}
 
 with open("README.rst", "r") as fh:

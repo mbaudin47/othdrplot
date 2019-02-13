@@ -32,15 +32,18 @@ kiwisolver==1.0.1
 MarkupSafe==1.1.0
 matplotlib==3.0.2
 mistune==0.8.4
+mock==2.0.0
 more-itertools==4.3.0
 nbconvert==5.3.1
 nbformat==4.4.0
 nbsphinx==0.4.2
 notebook==5.7.4
 numpy==1.16.1
+-e git+https://tupui@github.com/tupui/othdrplot.git@4489ac56ec63599ccb989d05439ed3e50a919047#egg=othdrplot
 packaging==19.0
 pandocfilters==1.4.2
 parso==0.3.4
+pbr==5.1.2
 pexpect==4.6.0
 pickleshare==0.7.5
 pluggy==0.8.1
