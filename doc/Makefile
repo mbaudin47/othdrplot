@@ -7,7 +7,7 @@ SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
 PDFBUILDDIR   = /tmp
-PDF           = otsurrogate-Documentation.pdf
+PDF           = othdrplot-Documentation.pdf
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -96,9 +96,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/otsurrogate.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/othdrplot.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/otsurrogate.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/othdrplot.qhc"
 
 .PHONY: applehelp
 applehelp:
@@ -115,8 +115,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/otsurrogate"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/otsurrogate"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/othdrplot"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/othdrplot"
 	@echo "# devhelp"
 
 .PHONY: epub
