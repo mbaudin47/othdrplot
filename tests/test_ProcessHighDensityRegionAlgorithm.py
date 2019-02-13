@@ -5,7 +5,7 @@ Test for ProcessHighDensityRegionAlgorithm class.
 """
 import os
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as plt
 from mock import patch
 from numpy.testing import assert_equal, assert_array_almost_equal
 import openturns as ot
@@ -46,22 +46,22 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     myhdrplot.dimensionReductionSummary()
 
     # Plot ACP
-    pl.figure()
     myhdrplot.plotDimensionReduction()
+    plt.show()
 
     # Plot Density
-    pl.figure()
     plotData = True
     plotOutliers = True
     myhdrplot.plotDensity(plotData, plotOutliers)
+    plt.show()
 
     # Plot trajectories
-    pl.figure()
     myhdrplot.plotTrajectories()
+    plt.show()
 
     # Plot outlier trajectories
-    pl.figure()
     myhdrplot.plotOutlierTrajectories()
+    plt.show()
 
     outlierIndices = myhdrplot.computeOutlierIndices()
     expected_outlierIndices = [3, 7, 22, 32, 33, 41, 47]

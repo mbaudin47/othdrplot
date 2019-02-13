@@ -10,7 +10,7 @@ TODO : proposer une alternative pour la réduction de dimension : Karhunen-Loèv
 Références : TODO
 """
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as plt
 import openturns as ot
 from .high_density_region_algorithm import HighDensityRegionAlgorithm
 
@@ -105,26 +105,31 @@ class ProcessHighDensityRegionAlgorithm:
               % str(self.explained_variance_ratio))
 
     def plotDimensionReduction(self):
-        pl.scatter(self.principalComponents[:, 0], self.principalComponents[:, 1])
-        pl.xlabel("PC1")
-        pl.ylabel("PC2")
-        pl.show()
+        fig, ax = plt.subplots()
+        ax.scatter(self.principalComponents[:, 0], self.principalComponents[:, 1])
+        ax.set_xlabel("PC1")
+        ax.set_ylabel("PC2")
+
+        return fig, ax
 
     def plotDensity(self, plotData, plotOutliers):
         # Draw contour
-        self.densityPlot.plotContour(plotData, plotOutliers)
-        return None
+        fig, ax = self.densityPlot.plotContour(plotData, plotOutliers)
+
+        return fig, ax
 
     def plotTrajectories(self):
         mymesh = self.processSample.getMesh()
         t = np.array(mymesh.getVertices())
-        pl.plot(t, self.sample, "b-")
+
+        fig, ax = plt.subplots()
+        ax.plot(t, self.sample, "b-")
         # Plot mean
         meanField = self.processSample.computeMean()
-        pl.plot(t, meanField.getValues(), "k-", label="Mean")
-        #
-        pl.legend()
-        return None
+        ax.plot(t, meanField.getValues(), "k-", label="Mean")
+        ax.legend()
+
+        return fig, ax
 
     def plotOutlierTrajectories(self, plotInliner=False):
         # Get the mesh
@@ -133,28 +138,32 @@ class ProcessHighDensityRegionAlgorithm:
         dataArray = np.array(self.sample)
         # Plot outlier trajectories
         outlierIndices = self.densityPlot.computeOutlierIndices()
-        if (outlierIndices != []):
+
+        fig, ax = plt.subplots()
+
+        if (outlierIndices.size != 0):
             outlierSample = dataArray[:, outlierIndices]
-            pl.plot(t, outlierSample, "r-")
+            ax.plot(t, outlierSample, "r-")
+
         # Plot inlier trajectories
         inlierIndices = self.densityPlot.computeOutlierIndices(False)
         inlierSample = dataArray[:, inlierIndices]
+
         if (plotInliner):
-            pl.plot(t, inlierSample, "b-")
+            ax.plot(t, inlierSample, "b-")
+
         # Plot inlier bounds
         inlierMin = np.min(inlierSample, axis=1)
         inlierMax = np.max(inlierSample, axis=1)
-        pl.fill_between(t, inlierMin, inlierMax, where=inlierMax >= inlierMin,
+        ax.fill_between(t, inlierMin, inlierMax, where=inlierMax >= inlierMin,
                         facecolor='green', label="Inlier at alpha=%.4f" % (self.outlierAlpha))
         # Plot mean
         meanField = self.processSample.computeMean()
-        pl.plot(t, meanField.getValues(), "k-", label="Mean")
-        # Oups !
-        # pl.legend()
-        pl.title("Outliers at alpha=%.4f" % (self.densityPlot.outlierAlpha))
-        #
-        pl.legend()
-        return inlierSample
+        ax.plot(t, meanField.getValues(), "k-", label="Mean")
+        ax.set_title("Outliers at alpha=%.4f" % (self.densityPlot.outlierAlpha))
+        ax.legend()
+
+        return inlierSample, fig, ax
 
     def computeOutlierIndices(self):
         indices = self.densityPlot.computeOutlierIndices()

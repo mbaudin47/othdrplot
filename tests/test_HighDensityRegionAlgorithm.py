@@ -4,13 +4,15 @@
 Test for ProcessHighDensityRegionAlgorithm class.
 """
 import os
-import pylab as pl
+import matplotlib.pyplot as plt
+from mock import patch
 from numpy.testing import assert_equal
 import openturns as ot
 from othdrplot import HighDensityRegionAlgorithm
 
 
-def test_HighDensityRegionAlgorithm():
+@patch("matplotlib.pyplot.show")
+def test_HighDensityRegionAlgorithm(mock_show):
     ot.RandomGenerator.SetSeed(0)
     numberOfPointsForSampling = 500
     ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling', 'true')
@@ -30,12 +32,12 @@ def test_HighDensityRegionAlgorithm():
 
     # Draw contour
     plotData = False
-    pl.figure()
     mydp.plotContour(plotData)
+    plt.show()
 
     # Plot data
-    pl.figure()
     mydp.plotContour(True)
+    plt.show()
 
     outlierIndices = mydp.computeOutlierIndices()
     expected_outlierIndices = [31, 60, 84, 105, 116, 121, 150, 151, 200, 207, 215,

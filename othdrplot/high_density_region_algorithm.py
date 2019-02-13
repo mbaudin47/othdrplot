@@ -11,7 +11,7 @@ TODO : identifier le point de plus forte densité
 Références : TODO
 """
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as plt
 import openturns as ot
 
 
@@ -64,7 +64,7 @@ class HighDensityRegionAlgorithm:
         ols = self.outlierLevelSet
         flag = ols.contains(self.sample)
         outsideLevelSetFlag = 0
-        if (outlierFlag):
+        if outlierFlag:
             sampleIndices = np.where(np.array(flag) == outsideLevelSetFlag)[0]
         else:
             sampleIndices = np.where(np.array(flag) != outsideLevelSetFlag)[0]
@@ -122,7 +122,9 @@ class HighDensityRegionAlgorithm:
         # TODO MBN Février 2017 : DistributionImplementation.cxx, lignes 2407 dans la méthode computeMinimumVolumeLevelSetWithThreshold
         # 3. Calcule la ligne de niveau pvalue associée a un niveau donné de probabilité
         # 4. Cree le contour
-        CS = pl.contour(X1, X2, Z, self.pvalueArray)
+
+        fig, ax = plt.subplots()
+        CS = ax.contour(X1, X2, Z, self.pvalueArray)
         # 5. Calcule les labels : affiche la probabilité plutôt que la densité
         fmt = {}
         numberOfContourLines = len(self.contoursAlpha)
@@ -130,14 +132,14 @@ class HighDensityRegionAlgorithm:
             l = CS.levels[i]
             fmt[l] = "%.0f %%" % (self.contoursAlpha[i] * 100)
         # 6. Create contour plot (enfin !)
-        pl.clabel(CS, CS.levels, inline=True, fontsize=10, fmt=fmt)
+        ax.clabel(CS, CS.levels, inline=True, fontsize=10, fmt=fmt)
         # 7. Dessine le nuage
         # Dessine les outliers
         if (plotOutliers):
             outlierIndices = self.computeOutlierIndices()
             dataArray = np.array(self.sample)
             outlierSample = dataArray[outlierIndices, :]
-            pl.plot(outlierSample[:, 0], outlierSample[:, 1], self.outlierMarker,
+            ax.plot(outlierSample[:, 0], outlierSample[:, 1], self.outlierMarker,
                     label="Outliers at alpha=%.4f" % (self.outlierAlpha))
 
         if (plotData):
@@ -146,15 +148,15 @@ class HighDensityRegionAlgorithm:
                 inlierIndices = self.computeOutlierIndices(False)
                 dataArray = np.array(self.sample)
                 nonoutlierSample = dataArray[inlierIndices, :]
-                pl.plot(nonoutlierSample[:, 0], nonoutlierSample[:, 1],
+                ax.plot(nonoutlierSample[:, 0], nonoutlierSample[:, 1],
                         self.dataMarker, label="Inliers at alpha=%.4f" % (self.outlierAlpha))
             else:
                 # Plot all points (including outliers)
-                pl.plot(self.sample[:, 0], self.sample[:, 1], self.dataMarker)
+                ax.plot(self.sample[:, 0], self.sample[:, 1], self.dataMarker)
         # Configure le graphique
-        pl.title('High Density Region plot')
+        ax.set_title('High Density Region plot')
         mydescr = self.sample.getDescription()
-        pl.xlabel(mydescr[0])
-        pl.ylabel(mydescr[1])
-        pl.legend()
-        return None
+        ax.set_xlabel(mydescr[0])
+        ax.set_ylabel(mydescr[1])
+        ax.legend()
+        return fig, ax
