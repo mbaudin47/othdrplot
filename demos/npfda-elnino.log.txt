@@ -1,7 +1,0 @@
-Number of trajectories = 54
-Number of vertices = 12
-Number of components : 2
-Part of variance : 0.8657
-Explained variance ratio : [0.60759627 0.25810156]
-Outliers trajectories at alpha=0.8000
-[ 3  7 22 32 33 41 47]
