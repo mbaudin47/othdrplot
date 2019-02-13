@@ -14,7 +14,7 @@ This compression process allows to turn the functional representation into a
 scalar representation of the matrix. In other words, you can visualize each curve
 from its components. This is called a bivariate plot.
 
-.. image::  images/npfda-elnino-DensityPlot.png
+.. image::  images/npfda-elnino-scatter.png
 
 This visualization exhibit a cluster of points. It indicate that a lot of
 curve lead to a common components. The center of the cluster is the mediane curve.
@@ -24,6 +24,8 @@ similar to the other curves.
 Using a kernel smoothing technique, the probability density function (PDF) of
 the 2D space can be recover. From this PDF, it is possible to compute the density
 probability linked to the cluster and plot its contours.
+
+.. image::  images/npfda-elnino-DensityPlot.png
 
 Finally, using these contours, the different quantiles are extracted allong with
 the mediane curve and the outliers.
