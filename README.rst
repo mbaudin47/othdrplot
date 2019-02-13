@@ -1,7 +1,7 @@
-|CI|_ |Codecov|_ |Python|_ |License|_
+|CI|_ |Python|_ |License|_
 
-.. |CI| image:: https://circleci.com/gh/tupui/otsurrogate.svg?style=svg
-.. _CI: https://circleci.com/gh/tupui/otsurrogate
+.. |CI| image:: https://circleci.com/gh/tupui/othdrplot.svg?style=svg
+.. _CI: https://circleci.com/gh/tupui/othdrplot
 
 .. |Python| image:: https://img.shields.io/badge/python-2.7,_3.7-blue.svg
 .. _Python: https://python.org
@@ -36,7 +36,7 @@ This module allows you to do exactly this:
 
 The output is the following figure: 
 
-.. image::  data/hdr-boxplot.png
+.. image::  doc/images/npfda-elnino-OutlierTrajectoryPlot.png
 
 Requirements
 ------------

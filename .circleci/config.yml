@@ -2,8 +2,8 @@
 version: 2
 jobs:
   build:
-    # docker:
-    #   - image: ...
+    docker:
+      - image: circleci/python:3.7.1
 
     working_directory: ~/othdrplot
 
@@ -34,6 +34,7 @@ jobs:
           name: run tests
           no_output_timeout: 10h
           command: |
+            . venv/bin/activate
             export MPLBACKEND="Agg"
             coverage run -m pytest .
             coverage html
