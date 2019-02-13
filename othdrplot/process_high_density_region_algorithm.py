@@ -31,7 +31,7 @@ class ProcessHighDensityRegionAlgorithm:
             self.sample[:, i] = thisTrajectory.getValues()
         # Check dimension
         dim = processSample.getDimension()
-        if (dim != 1):
+        if dim != 1:
             raise ValueError(
                 'The dimension of the process sample must be equal to 1, but current dimension is %d.' % (dim))
         self.principalComponents = None
@@ -149,7 +149,7 @@ class ProcessHighDensityRegionAlgorithm:
         inlierIndices = self.densityPlot.computeOutlierIndices(False)
         inlierSample = dataArray[:, inlierIndices]
 
-        if (plotInliner):
+        if plotInliner:
             ax.plot(t, inlierSample, "b-")
 
         # Plot inlier bounds

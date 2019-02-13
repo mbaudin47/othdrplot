@@ -133,17 +133,18 @@ class HighDensityRegionAlgorithm:
             fmt[l] = "%.0f %%" % (self.contoursAlpha[i] * 100)
         # 6. Create contour plot (enfin !)
         ax.clabel(CS, CS.levels, inline=True, fontsize=10, fmt=fmt)
+
         # 7. Dessine le nuage
         # Dessine les outliers
-        if (plotOutliers):
+        if plotOutliers:
             outlierIndices = self.computeOutlierIndices()
             dataArray = np.array(self.sample)
             outlierSample = dataArray[outlierIndices, :]
             ax.plot(outlierSample[:, 0], outlierSample[:, 1], self.outlierMarker,
                     label="Outliers at alpha=%.4f" % (self.outlierAlpha))
 
-        if (plotData):
-            if (plotOutliers):
+        if plotData:
+            if plotOutliers:
                 # Plot only non-outlier sample data
                 inlierIndices = self.computeOutlierIndices(False)
                 dataArray = np.array(self.sample)
@@ -153,10 +154,12 @@ class HighDensityRegionAlgorithm:
             else:
                 # Plot all points (including outliers)
                 ax.plot(self.sample[:, 0], self.sample[:, 1], self.dataMarker)
+
         # Configure le graphique
         ax.set_title('High Density Region plot')
         mydescr = self.sample.getDescription()
         ax.set_xlabel(mydescr[0])
         ax.set_ylabel(mydescr[1])
         ax.legend()
+
         return fig, ax

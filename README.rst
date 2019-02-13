@@ -28,11 +28,11 @@ some questions such as:
 This module allows you to do exactly this: 
 
 .. code-block:: python
-    
-    data = np.loadtxt('data/elnino.dat')
-    print('Data shape: ', data.shape)
 
-    hdr_boxplot(data)
+    hdr = ProcessHighDensityRegionAlgorithm(sample)
+    hdr.setOutlierAlpha(0.8)
+    hdr.run()
+    hdr.plotOutlierTrajectories()
 
 The output is the following figure: 
 
