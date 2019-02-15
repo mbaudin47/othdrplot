@@ -49,7 +49,7 @@ given fraction of the population.
     # Estimate the distribution
     myks = ot.KernelSmoothing()
     sampleDistribution = myks.build(sample)
-	# Create the HDR algorithm
+    # Create the HDR algorithm
     mydp = HighDensityRegionAlgorithm(sample, sampleDistribution)
     mydp.run()
     # Draw contour
