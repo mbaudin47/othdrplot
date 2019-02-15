@@ -115,7 +115,6 @@ TODO-List  HighDensityRegionAlgorithm
 *************************************
 
 - pouvoir créer le graphique avec une dimension supérieure à 2 : utiliser un Pairs avec des lignes de contours (actuellement : uniquement dimension 2)
-- Pouvoir spécifier la méthode d’estimation de densité que l’on souhaite (actuellement : uniquement KernelSmoothing)
 - créer un exemple pour utiliser un mélange de gaussiennes
 - print the part of explained variance in the title
 
@@ -128,4 +127,5 @@ trajectory.
 
 - pouvoir avoir un nombre de composantes principales supérieur à 2 (actuellement : uniquement dimension 2)
 - pouvoir choisir une autre méthode de réduction de dimension, comme par exemple avec la réduction de dimension par Karhunen-Loève (actuellement : uniquement par ACP)
+- Pouvoir spécifier la méthode d’estimation de densité que l’on souhaite (actuellement : uniquement KernelSmoothing)
 - méthode de Pamphile
