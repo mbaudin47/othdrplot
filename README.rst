@@ -116,7 +116,6 @@ TODO-List  HighDensityRegionAlgorithm
 
 - pouvoir créer le graphique avec une dimension supérieure à 2 : utiliser un Pairs avec des lignes de contours (actuellement : uniquement dimension 2)
 - créer un exemple pour utiliser un mélange de gaussiennes
-- print the part of explained variance in the title
 
 TODO-List  ProcessHighDensityRegionAlgorithm 
 ********************************************
@@ -124,6 +123,8 @@ TODO-List  ProcessHighDensityRegionAlgorithm
 - print the highest density trajectory instead of the mean ; this is the trajectory with the highest density. 
 This is because the date-by-date mean is not actually a 
 trajectory. 
+
+- print the fraction of explained variance in the title
 
 - pouvoir avoir un nombre de composantes principales supérieur à 2 (actuellement : uniquement dimension 2)
 - pouvoir choisir une autre méthode de réduction de dimension, comme par exemple avec la réduction de dimension par Karhunen-Loève (actuellement : uniquement par ACP)
