@@ -38,6 +38,29 @@ The output is the following figure:
 
 .. image::  doc/images/npfda-elnino-OutlierTrajectoryPlot.png
 
+In the situation where a multivariate sample is given, the 
+HighDensityRegionAlgorithm allows to plot the 
+regions where the density is associated with a 
+given fraction of the population.
+
+.. code-block:: python
+
+    sample = ot.Sample.ImportFromCSVFile('gauss-mixture.csv')
+    # Estimate the distribution
+    myks = ot.KernelSmoothing()
+    sampleDistribution = myks.build(sample)
+	# Create the HDR algorithm
+    mydp = HighDensityRegionAlgorithm(sample, sampleDistribution)
+    mydp.run()
+    # Draw contour
+    plotData = False
+    mydp.plotContour(plotData)
+    plt.show()
+
+The output is the following figure: 
+
+.. image::  doc/images/gauss-mixture-OutlierPlot.png
+
 Requirements
 ------------
 
