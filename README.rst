@@ -99,10 +99,10 @@ TODO-List  HighDensityRegionAlgorithm
 TODO-List  ProcessHighDensityRegionAlgorithm 
 ********************************************
 
-- print the highest density trajectory instead of the 
-mean ; this is the trajectory with the highest density. 
+- print the highest density trajectory instead of the mean ; this is the trajectory with the highest density. 
 This is because the date-by-date mean is not actually a 
 trajectory. 
+
 - pouvoir avoir un nombre de composantes principales supérieur à 2 (actuellement : uniquement dimension 2)
 - pouvoir choisir une autre méthode de réduction de dimension, comme par exemple avec la réduction de dimension par Karhunen-Loève (actuellement : uniquement par ACP)
 - méthode de Pamphile
