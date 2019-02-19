@@ -52,8 +52,13 @@ class HighDensityRegionAlgorithm:
         # Compute the outlier level set
         levelset, pvalue = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
             self.outlierAlpha)
+
         self.outlierPvalue = pvalue
         self.outlier_levelset = levelset
+
+        # Compute the modal level set
+        pdf = np.array(self.distribution.computePDF(self.sample))
+        self.idx_mode = int(np.argmax(pdf))
 
     def computeOutlierIndices(self, outlierFlag=True):
         """Get inlier or outlier indices.
@@ -65,14 +70,13 @@ class HighDensityRegionAlgorithm:
         :rtype: list(int)
         """
         flag = self.outlier_levelset.contains(self.sample)
-        ols_flag = 0
 
         if outlierFlag:
-            sampleIndices = np.where(np.array(flag) == ols_flag)[0]
+            sample_idx = np.where(np.array(flag) == 0)[0]
         else:
-            sampleIndices = np.where(np.array(flag) != ols_flag)[0]
+            sample_idx = np.where(np.array(flag) != 0)[0]
 
-        return sampleIndices
+        return sample_idx
 
     def setnumberOfPointsInXAxis(self, numberOfPointsInXAxis):
         self.numberOfPointsInXAxis = numberOfPointsInXAxis

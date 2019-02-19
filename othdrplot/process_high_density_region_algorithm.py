@@ -142,9 +142,10 @@ class ProcessHighDensityRegionAlgorithm:
 
         return graph
 
-    def plotTrajectories(self):
+    def plotTrajectories(self, discreteMean=False):
         """Plot trajectories from the :attr:`ProcessSample`.
 
+        :param bool discreteMean: Whether to compute the mean per vertex.
         :return: OpenTURNS graph object.
         :rtype: :class:`openturns.Graph`
         """
@@ -157,44 +158,58 @@ class ProcessHighDensityRegionAlgorithm:
             graph.add(traj_curves)
 
         # Plot mean
-        mean_field = self.processSample.computeMean()
-        mean_curve = ot.Curve(t, mean_field.getValues(), 'Discrete mean')
+        if discreteMean:
+            mean_field = self.processSample.computeMean()
+        else:
+            mean_field = self.processSample[self.densityPlot.idx_mode]
+
+        mean_curve = ot.Curve(t, mean_field.getValues(), 'Mode')
         mean_curve.setColor('black')
         mean_curve.setLineWidth(2)
         graph.add(mean_curve)
 
         return graph
 
-    def plotOutlierTrajectories(self, plotInliner=False):
-        """Plot trajectories with confidence intervals from the :attr:`ProcessSample`."""
+    def plotOutlierTrajectories(self, plotInliers=False, discreteMean=False):
+        """Plot trajectories with confidence intervals from the :attr:`ProcessSample`.
+
+        :param bool plotInliers: Whether to plot inliers or not.
+        :param bool discreteMean: Whether to compute the mean per vertex or
+          by minimal volume levelset using the distribution.
+        """
         # Get the mesh
         mesh = self.processSample.getMesh()
         t = np.ravel(mesh.getVertices())
         dataArray = np.array(self.sample)
         # Plot outlier trajectories
-        outlierIndices = self.densityPlot.computeOutlierIndices()
+        outlier_idx = self.densityPlot.computeOutlierIndices()
 
         fig, ax = plt.subplots()
 
-        if outlierIndices.size != 0:
-            outlierSample = dataArray[:, outlierIndices]
-            ax.plot(t, outlierSample, "r-")
+        if outlier_idx.size != 0:
+            outlier_sample = dataArray[:, outlier_idx]
+            ax.plot(t, outlier_sample, "r-")
 
         # Plot inlier trajectories
         inlierIndices = self.densityPlot.computeOutlierIndices(False)
         inlierSample = dataArray[:, inlierIndices]
 
-        if plotInliner:
+        if plotInliers:
             ax.plot(t, inlierSample, "b-")
 
         # Plot inlier bounds
-        inlierMin = np.min(inlierSample, axis=1)
+        inlier_min = np.min(inlierSample, axis=1)
         inlierMax = np.max(inlierSample, axis=1)
-        ax.fill_between(t, inlierMin, inlierMax, where=inlierMax >= inlierMin,
-                        facecolor='green', label="Inlier at alpha=%.4f" % (self.outlierAlpha))
+        ax.fill_between(t, inlier_min, inlierMax, facecolor='green',
+                        where=inlierMax >= inlier_min,
+                        label="Inlier at alpha=%.4f" % (self.outlierAlpha))
         # Plot mean
-        meanField = self.processSample.computeMean()
-        ax.plot(t, meanField.getValues(), "k-", label="Mean")
+        if discreteMean:
+            mean_field = self.processSample.computeMean()
+        else:
+            mean_field = self.processSample[self.densityPlot.idx_mode]
+
+        ax.plot(t, mean_field.getValues(), "k-", label="Mean")
         ax.set_title("Outliers at alpha=%.4f" % (self.densityPlot.outlierAlpha))
         ax.legend()
 
