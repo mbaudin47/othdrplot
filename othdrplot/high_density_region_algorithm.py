@@ -1,73 +1,77 @@
 # -*- coding: utf-8 -*-
 # Copyright 2018 EDF.
 """
-Un composant pour créer des HighDensityRegionAlgorithm.
-
-TODO : étendre l'algorithme aux échantillons de dimension >2
-i.e. utiliser un Pairs() et y placer les contour.
-
-TODO : identifier le point de plus forte densité
-
-Références : TODO
+Component to create HighDensityRegionAlgorithm.
 """
 import numpy as np
-import matplotlib.pyplot as plt
 import openturns as ot
 
 
 class HighDensityRegionAlgorithm:
+    """Compute the Highest Density Region."""
+
     def __init__(self, sample, distribution):
-        # Parameters
-        self.numberOfPointsInXAxis = 30  # The number of points in the X-grid to plot the contour
-        self.numberOfPointsInYAxis = 30  # The number of points in the Y-grid to plot the contour
+        """Compute a High Density Region.
+
+        :param sample: Sample of size (n_samples, n_dims).
+        :param distribution: Probability Density Function of the sample.
+        :type sample: :class:`openturns.Sample`
+        :type distribution: :class:`openturns.Distribution`
+        """
+        # Number of points per dim to plot the contour
+        self.numberOfPointsInXAxis = 30
+        self.numberOfPointsInYAxis = 30
+
         # The list of probabilities to create the contour
         self.contoursAlpha = [0.9, 0.5, 0.1]
         self.outlierAlpha = 0.9  # The probability for outlier detection
-        self.outlierMarker = "r*"  # The marker for outliers
-        self.dataMarker = "b."  # The marker for data
-        #
+
+        self.data_marker = "fsquare"  # The marker for data
+
         self.sample = sample
         self.distribution = distribution
-        # Check input
-        sampleDim = sample.getDimension()
-        if (sampleDim != 2):
-            raise ValueError(
-                'The dimension of the sample must be equal to 2, but current dimension is %d.' % (sampleDim))
+        self.dim = sample.getDimension()
+
         # Computed by the algorithm
-        self.pvalueArray = None
-        self.levelSetList = []
+        self.pvalues = None
+        self.levelsets = []
         self.outlierPvalue = None
-        self.outlierLevelSet = None
+        self.outlier_levelset = None
 
     def run(self):
-        numberOfContourLines = len(self.contoursAlpha)
+        """Compute pvalues and level sets."""
+        n_contour_lines = len(self.contoursAlpha)
         # Compute the regular level sets
-        self.pvalueArray = np.zeros(numberOfContourLines)
-        for i in range(numberOfContourLines):
-            levelSet, pvalue = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
+        self.pvalues = np.zeros(n_contour_lines)
+        for i in range(n_contour_lines):
+            levelset, pvalue = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
                 self.contoursAlpha[i])
-            self.pvalueArray[i] = pvalue
-            self.levelSetList.append(levelSet)
+            self.pvalues[i] = pvalue
+            self.levelsets.append(levelset)
+
         # Compute the outlier level set
-        levelSet, pvalue = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
+        levelset, pvalue = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
             self.outlierAlpha)
         self.outlierPvalue = pvalue
-        self.outlierLevelSet = levelSet
-        return None
+        self.outlier_levelset = levelset
 
     def computeOutlierIndices(self, outlierFlag=True):
-        '''
-        If outlierFlag is true, returns the array of outlier indices in the sample. 
-        These outliers correspond to the self.outlierAlpha probability.
-        Otherwise, returns the array of inlier indices in the sample. 
-        '''
-        ols = self.outlierLevelSet
-        flag = ols.contains(self.sample)
-        outsideLevelSetFlag = 0
+        """Get inlier or outlier indices.
+
+        Outliers correspond to the :attr:`self.outlierAlpha` probability.
+
+        :param bool outlierFlag: Whether to return outlier or inlier indices.
+        :return: Outlier or inlier indices.
+        :rtype: list(int)
+        """
+        flag = self.outlier_levelset.contains(self.sample)
+        ols_flag = 0
+
         if outlierFlag:
-            sampleIndices = np.where(np.array(flag) == outsideLevelSetFlag)[0]
+            sampleIndices = np.where(np.array(flag) == ols_flag)[0]
         else:
-            sampleIndices = np.where(np.array(flag) != outsideLevelSetFlag)[0]
+            sampleIndices = np.where(np.array(flag) != ols_flag)[0]
+
         return sampleIndices
 
     def setnumberOfPointsInXAxis(self, numberOfPointsInXAxis):
@@ -82,84 +86,83 @@ class HighDensityRegionAlgorithm:
     def setOutlierAlpha(self, outlierAlpha):
         self.outlierAlpha = outlierAlpha
 
-    def computeContour2D(self, X1pars, X2pars):
-        X1min, X1max, nX1 = X1pars
-        X2min, X2max, nX2 = X2pars
-        #
-        x1 = np.linspace(X1min, X1max, nX1)
-        x2 = np.linspace(X2min, X2max, nX2)
-        X1, X2 = np.meshgrid(x1, x2)
-        #
-        X1flat = X1.flatten()
-        X2flat = X2.flatten()
-        #
-        X1flat = ot.Sample(X1flat, 1)
-        X2flat = ot.Sample(X2flat, 1)
-        #
-        inputContour = ot.Sample(nX1 * nX2, 2)
-        inputContour[:, 0] = X1flat
-        inputContour[:, 1] = X2flat
-        Z = self.distribution.computePDF(inputContour)
-        #
-        Z = np.array(Z)
-        Z = Z.reshape((nX1, nX2))
-        return [X1, X2, Z]
+    def _inliers_outliers(self, inliers=True):
+        """Inliers or outliers cloud ploting.
+
+        :param bool inliers: Whether to plot inliers or outliers.
+        :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
+        :rtype: :class:`openturns.Graph` or :class:`openturns.Pairs`
+        """
+        if inliers:
+            idx = self.computeOutlierIndices(False)
+            legend = "Inliers at alpha=%.4f" % (self.outlierAlpha)
+            marker_color = 'blue'
+        else:
+            idx = self.computeOutlierIndices()
+            legend = "Outliers at alpha=%.4f" % (self.outlierAlpha)
+            marker_color = 'red'
+
+        sample = np.array(self.sample)
+        sample = sample[idx, :]
+
+        if self.dim == 2:
+            cloud = ot.Cloud(sample, marker_color, self.data_marker, legend)
+        else:
+            cloud = ot.Pairs(sample, '', self.sample.getDescription(),
+                             marker_color, self.data_marker)
+
+        return cloud
 
     def plotContour(self, plotData=False, plotOutliers=True):
-        '''
-        Plot the contour in the density plot.
-        Set plotData to true to plot the sample data.
-        Set plotOutliers to true to plot the sample data.
-        '''
-        # 2. Evalue la densité sur une grille régulière
-        X1min = self.sample[:, 0].getMin()[0]
-        X1max = self.sample[:, 0].getMax()[0]
-        X2min = self.sample[:, 1].getMin()[0]
-        X2max = self.sample[:, 1].getMax()[0]
-        X1pars = [X1min, X1max, self.numberOfPointsInXAxis]
-        X2pars = [X2min, X2max, self.numberOfPointsInYAxis]
-        [X1, X2, Z] = self.computeContour2D(X1pars, X2pars)
-        # TODO MBN Février 2017 : DistributionImplementation.cxx, lignes 2407 dans la méthode computeMinimumVolumeLevelSetWithThreshold
-        # 3. Calcule la ligne de niveau pvalue associée a un niveau donné de probabilité
-        # 4. Cree le contour
+        """Plot High Density Region.
 
-        fig, ax = plt.subplots()
-        CS = ax.contour(X1, X2, Z, self.pvalueArray)
-        # 5. Calcule les labels : affiche la probabilité plutôt que la densité
-        fmt = {}
-        numberOfContourLines = len(self.contoursAlpha)
-        for i in range(numberOfContourLines):
-            l = CS.levels[i]
-            fmt[l] = "%.0f %%" % (self.contoursAlpha[i] * 100)
-        # 6. Create contour plot (enfin !)
-        ax.clabel(CS, CS.levels, inline=True, fontsize=10, fmt=fmt)
+        If :attr:`plotData`, the whole sample is drawn. Otherwise, depending on
+        :attr:`plotOutliers` it will either show the outliers or the inliers
+        only.
 
-        # 7. Dessine le nuage
-        # Dessine les outliers
-        if plotOutliers:
-            outlierIndices = self.computeOutlierIndices()
-            dataArray = np.array(self.sample)
-            outlierSample = dataArray[outlierIndices, :]
-            ax.plot(outlierSample[:, 0], outlierSample[:, 1], self.outlierMarker,
-                    label="Outliers at alpha=%.4f" % (self.outlierAlpha))
+        :param bool plotData: Plot inliers and outliers.
+        :param bool plotOutliers: Whether to plot inliers or outliers.
+        :return: OpenTURNS Graph object.
+        :rtype: :class:`openturns.Graph`
+        """
+        xlabel, ylabel = self.sample.getDescription()
+        graph = ot.Graph('High Density Region plot', xlabel, ylabel, True, 'topright')
+
+        if self.dim == 2:
+            # Use a regular grid to compute probability response surface
+            X1min = self.sample[:, 0].getMin()[0]
+            X1max = self.sample[:, 0].getMax()[0]
+            X2min = self.sample[:, 1].getMin()[0]
+            X2max = self.sample[:, 1].getMax()[0]
+
+            xx = ot.Box([self.numberOfPointsInXAxis],
+                        ot.Interval([X1min], [X1max])).generate()
+
+            yy = ot.Box([self.numberOfPointsInXAxis],
+                        ot.Interval([X2min], [X2max])).generate()
+
+            xy = ot.Box([self.numberOfPointsInXAxis, self.numberOfPointsInXAxis],
+                        ot.Interval([X1min, X2min], [X1max, X2max])).generate()
+
+            data = self.distribution.computePDF(xy)
+
+            # Label using percentage instead of probability
+            n_contours = len(self.contoursAlpha)
+            labels = ["%.0f %%" % (self.contoursAlpha[i] * 100)
+                      for i in range(n_contours)]
+
+            contour = ot.Contour(xx, yy, data, self.pvalues,
+                                 ot.Description(labels))
+            contour.setColor('black')
+
+            graph.add(contour)
 
         if plotData:
-            if plotOutliers:
-                # Plot only non-outlier sample data
-                inlierIndices = self.computeOutlierIndices(False)
-                dataArray = np.array(self.sample)
-                nonoutlierSample = dataArray[inlierIndices, :]
-                ax.plot(nonoutlierSample[:, 0], nonoutlierSample[:, 1],
-                        self.dataMarker, label="Inliers at alpha=%.4f" % (self.outlierAlpha))
-            else:
-                # Plot all points (including outliers)
-                ax.plot(self.sample[:, 0], self.sample[:, 1], self.dataMarker)
+            graph.add(self._inliers_outliers(inliers=True))
+            graph.add(self._inliers_outliers(inliers=False))
+        elif plotOutliers:
+            graph.add(self._inliers_outliers(inliers=True))
+        else:
+            graph.add(self._inliers_outliers(inliers=False))
 
-        # Configure le graphique
-        ax.set_title('High Density Region plot')
-        mydescr = self.sample.getDescription()
-        ax.set_xlabel(mydescr[0])
-        ax.set_ylabel(mydescr[1])
-        ax.legend()
-
-        return fig, ax
+        return graph

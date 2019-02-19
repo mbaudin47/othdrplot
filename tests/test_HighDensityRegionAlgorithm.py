@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from mock import patch
 from numpy.testing import assert_equal
 import openturns as ot
+from openturns.viewer import View
 from othdrplot import HighDensityRegionAlgorithm
 
 
@@ -19,27 +20,37 @@ def test_HighDensityRegionAlgorithm(mock_show):
     ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetSamplingSize',
                        str(numberOfPointsForSampling))
 
+    # Dataset
     fname = os.path.join(os.path.dirname(__file__), 'data', 'gauss-mixture.csv')
     sample = ot.Sample.ImportFromCSVFile(fname)
 
     # Creation du kernel smoothing
-    myks = ot.KernelSmoothing()
-    sampleDistribution = myks.build(sample)
+    ks = ot.KernelSmoothing()
+    sample_distribution = ks.build(sample)
 
-    mydp = HighDensityRegionAlgorithm(sample, sampleDistribution)
+    dp = HighDensityRegionAlgorithm(sample, sample_distribution)
+    dp.run()
 
-    mydp.run()
+    # Plot inliers/outliers
+    graph = dp.plotContour(plotData=False)
+    View(graph)
+    plt.show()
 
-    # Draw contour
-    plotData = False
-    mydp.plotContour(plotData)
+    graph = dp.plotContour(plotData=False, plotOutliers=False)
+    View(graph)
     plt.show()
 
     # Plot data
-    mydp.plotContour(True)
+    graph = dp.plotContour(plotData=True)
+    View(graph)
     plt.show()
 
-    outlierIndices = mydp.computeOutlierIndices()
+    dp.dim = 3
+    graph = dp.plotContour(plotData=True)
+    View(graph)
+    plt.show()
+
+    outlierIndices = dp.computeOutlierIndices()
     expected_outlierIndices = [31, 60, 84, 105, 116, 121, 150, 151, 200, 207, 215,
                                218, 220, 248, 282, 284, 291, 359, 361, 378, 382,
                                404, 412, 418, 425, 426, 433, 449, 450, 457, 461,
