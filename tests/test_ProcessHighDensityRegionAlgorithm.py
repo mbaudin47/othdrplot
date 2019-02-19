@@ -13,8 +13,8 @@ from openturns.viewer import View
 from othdrplot import ProcessHighDensityRegionAlgorithm
 
 
-@patch("matplotlib.pyplot.show")
-def test_ProcessHighDensityRegionAlgorithm(mock_show):
+# @patch("matplotlib.pyplot.show")
+def test_ProcessHighDensityRegionAlgorithm():#mock_show):
     ot.RandomGenerator.SetSeed(0)
     numberOfPointsForSampling = 500
     ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling', 'true')
@@ -48,18 +48,18 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     hdrplot.dimensionReductionSummary()
 
     # Plot ACP
-    hdrplot.plotDimensionReduction()
-    plt.show()
+    graph = hdrplot.plotDimensionReduction()
+    View(graph)
+    plt.show(graph)
 
     # Plot Density
-    plotData = True
-    plotOutliers = True
-    graph = hdrplot.plotDensity(plotData, plotOutliers)
+    graph = hdrplot.plotDensity()
     View(graph)
     plt.show()
 
     # Plot trajectories
-    hdrplot.plotTrajectories()
+    graph = hdrplot.plotTrajectories()
+    View(graph)
     plt.show()
 
     # Plot outlier trajectories

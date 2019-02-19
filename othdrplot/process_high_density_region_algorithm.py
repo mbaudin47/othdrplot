@@ -14,7 +14,7 @@ class ProcessHighDensityRegionAlgorithm:
 
     def __init__(self, processSample):
         """Density plot based on a :attr:`ProcessSample`.
-        
+
         :param processSample: Process sample.
         :type processSample: :class:`openturns.ProcessSample`
         """
@@ -24,9 +24,9 @@ class ProcessHighDensityRegionAlgorithm:
         mesh = processSample.getMesh()
         self.verticesNumber = mesh.getVerticesNumber()
         self.sample = ot.Sample(self.verticesNumber, self.processSample.getSize())
-        n_trajectories = self.processSample.getSize()
+        self.n_trajectories = self.processSample.getSize()
 
-        for i in range(n_trajectories):
+        for i in range(self.n_trajectories):
             trajectory = self.processSample[i]
             self.sample[:, i] = trajectory.getValues()
 
@@ -72,7 +72,9 @@ class ProcessHighDensityRegionAlgorithm:
         # Truncate
         VL = V[:, 0:self.numberOfComponents]
         # Project
-        self.principalComponents = np.array(matrix * VL)
+        self.principalComponents = ot.Sample(np.array(matrix * VL))
+        labels = ['PC' + str(i) for i in range(self.numberOfComponents)]
+        self.principalComponents.setDescription(labels)
 
         # Compute explained variance
         explained_variance = ot.Point(self.verticesNumber)
@@ -90,13 +92,11 @@ class ProcessHighDensityRegionAlgorithm:
 
     def runKS(self):
         """Create kernel smoothing."""
-        principal_components_sample = ot.Sample(self.principalComponents)
-
         ks = ot.KernelSmoothing()
-        sample_distribution = ks.build(principal_components_sample)
+        sample_distribution = ks.build(self.principalComponents)
         # Create DensityPlot
         self.densityPlot = HighDensityRegionAlgorithm(
-            principal_components_sample, sample_distribution)
+            self.principalComponents, sample_distribution)
         self.densityPlot.setContoursAlpha(self.contoursAlpha)
         self.densityPlot.setOutlierAlpha(self.outlierAlpha)
 
@@ -114,16 +114,21 @@ class ProcessHighDensityRegionAlgorithm:
               % str(self.explained_variance_ratio))
 
     def plotDimensionReduction(self):
-        fig, ax = plt.subplots()
-        ax.scatter(self.principalComponents[:, 0], self.principalComponents[:, 1])
-        ax.set_xlabel("PC1")
-        ax.set_ylabel("PC2")
+        """Pairplot of the principal components.
 
-        return fig, ax
+        :return: OpenTURNS Graph object.
+        :rtype: :class:`openturns.Graph`
+        """
+        graph = ot.Graph('Reduced Space', '', '', True, 'topright')
+        cloud = ot.Pairs(self.principalComponents)
+        cloud.setLabels(self.principalComponents.getDescription())
+        graph.add(cloud)
 
-    def plotDensity(self, plotData, plotOutliers):
+        return graph
+
+    def plotDensity(self, plotData=False, plotOutliers=True):
         """Density plot based on HDR.
-        
+
         If :attr:`plotData`, the whole sample is drawn. Otherwise, depending on
         :attr:`plotOutliers` it will either show the outliers or the inliers
         only.
@@ -138,19 +143,30 @@ class ProcessHighDensityRegionAlgorithm:
         return graph
 
     def plotTrajectories(self):
+        """Plot trajectories from the :attr:`ProcessSample`.
+
+        :return: OpenTURNS graph object.
+        :rtype: :class:`openturns.Graph`
+        """
+        graph = ot.Graph('Trajectories', '', '', True, 'topright')
+
         mesh = self.processSample.getMesh()
         t = np.array(mesh.getVertices())
+        for i in range(self.n_trajectories):
+            traj_curves = ot.Curve(t, self.sample[:, i])
+            graph.add(traj_curves)
 
-        fig, ax = plt.subplots()
-        ax.plot(t, self.sample, "b-")
         # Plot mean
-        meanField = self.processSample.computeMean()
-        ax.plot(t, meanField.getValues(), "k-", label="Mean")
-        ax.legend()
+        mean_field = self.processSample.computeMean()
+        mean_curve = ot.Curve(t, mean_field.getValues(), 'Discrete mean')
+        mean_curve.setColor('black')
+        mean_curve.setLineWidth(2)
+        graph.add(mean_curve)
 
-        return fig, ax
+        return graph
 
     def plotOutlierTrajectories(self, plotInliner=False):
+        """Plot trajectories with confidence intervals from the :attr:`ProcessSample`."""
         # Get the mesh
         mesh = self.processSample.getMesh()
         t = np.ravel(mesh.getVertices())
@@ -160,7 +176,7 @@ class ProcessHighDensityRegionAlgorithm:
 
         fig, ax = plt.subplots()
 
-        if (outlierIndices.size != 0):
+        if outlierIndices.size != 0:
             outlierSample = dataArray[:, outlierIndices]
             ax.plot(t, outlierSample, "r-")
 
