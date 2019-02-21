@@ -109,6 +109,9 @@ class HighDensityRegionAlgorithm:
         sample = np.array(self.sample)
         sample = sample[idx, :]
 
+        if sample.size == 0:
+            return
+
         if self.dim == 2:
             cloud = ot.Cloud(sample, marker_color, self.data_marker, legend)
         else:
@@ -129,8 +132,7 @@ class HighDensityRegionAlgorithm:
         :return: OpenTURNS Graph object.
         :rtype: :class:`openturns.Graph`
         """
-        xlabel, ylabel = self.sample.getDescription()
-        graph = ot.Graph('High Density Region plot', xlabel, ylabel, True, 'topright')
+        graph = ot.Graph('High Density Region plot', '', '', True, 'topright')
 
         if self.dim == 2:
             # Use a regular grid to compute probability response surface
@@ -159,14 +161,22 @@ class HighDensityRegionAlgorithm:
                                  ot.Description(labels))
             contour.setColor('black')
 
+            xlabel, ylabel = self.sample.getDescription()
+            graph.setXTitle(xlabel)
+            graph.setYTitle(ylabel)
             graph.add(contour)
 
         if plotData:
             graph.add(self._inliers_outliers(inliers=True))
-            graph.add(self._inliers_outliers(inliers=False))
+
+            outliers = self._inliers_outliers(inliers=False)
+            if outliers is not None:
+                graph.add(outliers)
         elif plotOutliers:
             graph.add(self._inliers_outliers(inliers=True))
         else:
-            graph.add(self._inliers_outliers(inliers=False))
+            outliers = self._inliers_outliers(inliers=False)
+            if outliers is not None:
+                graph.add(outliers)
 
         return graph

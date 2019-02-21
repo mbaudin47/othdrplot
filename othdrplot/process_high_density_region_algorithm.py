@@ -12,10 +12,11 @@ from .high_density_region_algorithm import HighDensityRegionAlgorithm
 class ProcessHighDensityRegionAlgorithm:
     """ProcessHighDensityRegionAlgorithm."""
 
-    def __init__(self, processSample):
+    def __init__(self, processSample, numberOfComponents=2):
         """Density plot based on a :attr:`ProcessSample`.
 
         :param processSample: Process sample.
+        :param int numberOfComponents: Number of components to use.
         :type processSample: :class:`openturns.ProcessSample`
         """
         self.processSample = processSample
@@ -37,7 +38,7 @@ class ProcessHighDensityRegionAlgorithm:
                 'The dimension of the process sample must be equal to 1, but '
                 'current dimension is %d.' % (dim))
         self.principalComponents = None
-        self.numberOfComponents = 2
+        self.numberOfComponents = numberOfComponents
         self.densityPlot = None
         self.densityPlot = None
         # The list of probabilities to create the contour
