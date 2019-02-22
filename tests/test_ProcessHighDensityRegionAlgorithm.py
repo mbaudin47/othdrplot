@@ -40,45 +40,45 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
         sample[i] = ot.Field(mesh, trajectory)
 
     # Compute HDRPlot
-    hdrplot = ProcessHighDensityRegionAlgorithm(sample)
-    hdrplot.setContoursAlpha([0.8, 0.5])
-    hdrplot.setOutlierAlpha(0.8)
-    hdrplot.run()
-    hdrplot.summary()
-    hdrplot.dimensionReductionSummary()
+    hdr = ProcessHighDensityRegionAlgorithm(sample)
+    hdr.setContoursAlpha([0.8, 0.5])
+    hdr.setOutlierAlpha(0.8)
+    hdr.run()
+    hdr.summary()
+    hdr.dimensionReductionSummary()
 
     # Plot ACP
-    graph = hdrplot.plotDimensionReduction()
+    graph = hdr.drawDimensionReduction()
     View(graph)
     plt.show(graph)
 
     # Plot Density
-    graph = hdrplot.plotDensity()
+    graph = hdr.drawDensity()
     View(graph)
     plt.show()
 
     # Plot trajectories
-    graph = hdrplot.plotTrajectories(discreteMean=True)
+    graph = hdr.drawTrajectories(discreteMean=True)
     View(graph)
     plt.show()
 
     # Plot outlier trajectories
-    _, graph = hdrplot.plotOutlierTrajectories(plotInliers=True, discreteMean=True)
+    _, graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
     View(graph)
     plt.show()
 
-    _, graph = hdrplot.plotOutlierTrajectories()
+    _, graph = hdr.drawOutlierTrajectories()
     View(graph)
     plt.show()
 
-    outlier_indices = hdrplot.computeOutlierIndices()
+    outlier_indices = hdr.computeOutlierIndices()
     expected_outlier_indices = [3, 7, 22, 32, 33, 41, 47]
     assert_equal(outlier_indices, expected_outlier_indices)
 
     # Check data
-    assert_equal(hdrplot.getNumberOfTrajectories(), 54)
-    assert_equal(hdrplot.getNumberOfVertices(), 12)
-    assert_equal(hdrplot.getNumberOfComponents(), 2)
-    assert_array_almost_equal(hdrplot.getPartOfExplainedVariance(), 0.86569783, 4)
-    assert_array_almost_equal(hdrplot.getExplainedVarianceRatio(),
+    assert_equal(hdr.getNumberOfTrajectories(), 54)
+    assert_equal(hdr.getNumberOfVertices(), 12)
+    assert_equal(hdr.getNumberOfComponents(), 2)
+    assert_array_almost_equal(hdr.getPartOfExplainedVariance(), 0.86569783, 4)
+    assert_array_almost_equal(hdr.getExplainedVarianceRatio(),
                               [0.60759627, 0.25810156], 4)

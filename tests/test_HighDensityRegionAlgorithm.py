@@ -32,21 +32,21 @@ def test_HighDensityRegionAlgorithm(mock_show):
     dp.run()
 
     # Plot inliers/outliers
-    graph = dp.plotContour(plotData=False)
+    graph = dp.drawContour(drawData=False)
     View(graph)
     plt.show()
 
-    graph = dp.plotContour(plotData=False, plotOutliers=False)
+    graph = dp.drawContour(drawData=False, drawOutliers=False)
     View(graph)
     plt.show()
 
     # Plot data
-    graph = dp.plotContour(plotData=True)
+    graph = dp.drawContour(drawData=True)
     View(graph)
     plt.show()
 
     dp.dim = 3
-    graph = dp.plotContour(plotData=True)
+    graph = dp.drawContour(drawData=True)
     View(graph)
     plt.show()
 

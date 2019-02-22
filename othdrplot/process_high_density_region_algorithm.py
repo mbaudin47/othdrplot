@@ -12,7 +12,7 @@ class ProcessHighDensityRegionAlgorithm:
     """ProcessHighDensityRegionAlgorithm."""
 
     def __init__(self, processSample, numberOfComponents=2):
-        """Density plot based on a :attr:`ProcessSample`.
+        """Density draw based on a :attr:`ProcessSample`.
 
         :param processSample: Process sample.
         :param int numberOfComponents: Number of components to use.
@@ -113,8 +113,8 @@ class ProcessHighDensityRegionAlgorithm:
         print('Explained variance ratio : %s'
               % str(self.explained_variance_ratio))
 
-    def plotDimensionReduction(self):
-        """Pairplot of the principal components.
+    def drawDimensionReduction(self):
+        """Pairdraw of the principal components.
 
         :return: OpenTURNS Graph object.
         :rtype: :class:`openturns.Graph`
@@ -126,23 +126,23 @@ class ProcessHighDensityRegionAlgorithm:
 
         return graph
 
-    def plotDensity(self, plotData=False, plotOutliers=True):
-        """Density plot based on HDR.
+    def drawDensity(self, drawData=False, drawOutliers=True):
+        """Density draw based on HDR.
 
-        If :attr:`plotData`, the whole sample is drawn. Otherwise, depending on
-        :attr:`plotOutliers` it will either show the outliers or the inliers
+        If :attr:`drawData`, the whole sample is drawn. Otherwise, depending on
+        :attr:`drawOutliers` it will either show the outliers or the inliers
         only.
 
-        :param bool plotData: Plot inliers and outliers.
-        :param bool plotOutliers: Whether to plot inliers or outliers.
+        :param bool drawData: Plot inliers and outliers.
+        :param bool drawOutliers: Whether to draw inliers or outliers.
         :return: HDR in an OpenTURNS graph object.
         :rtype: :class:`openturns.Graph`
         """
-        graph = self.densityPlot.plotContour(plotData, plotOutliers)
+        graph = self.densityPlot.drawContour(drawData, drawOutliers)
 
         return graph
 
-    def plotTrajectories(self, discreteMean=False):
+    def drawTrajectories(self, discreteMean=False):
         """Plot trajectories from the :attr:`ProcessSample`.
 
         :param bool discreteMean: Whether to compute the mean per vertex.
@@ -170,10 +170,10 @@ class ProcessHighDensityRegionAlgorithm:
 
         return graph
 
-    def plotOutlierTrajectories(self, plotInliers=False, discreteMean=False):
+    def drawOutlierTrajectories(self, drawInliers=False, discreteMean=False):
         """Plot trajectories with confidence intervals from the :attr:`ProcessSample`.
 
-        :param bool plotInliers: Whether to plot inliers or not.
+        :param bool drawInliers: Whether to draw inliers or not.
         :param bool discreteMean: Whether to compute the mean per vertex or
           by minimal volume levelset using the distribution.
         """
@@ -199,7 +199,7 @@ class ProcessHighDensityRegionAlgorithm:
         inlier_indices = self.densityPlot.computeOutlierIndices(False)
         inlier_samples = sample[:, inlier_indices]
 
-        if plotInliers:
+        if drawInliers:
             for inlier_sample in inlier_samples.T:
                 curve = ot.Curve(t, inlier_sample)
                 curve.setColor('blue')
