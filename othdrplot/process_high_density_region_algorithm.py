@@ -183,21 +183,18 @@ class ProcessHighDensityRegionAlgorithm:
         # Get the mesh
         mesh = self.processSample.getMesh()
         t = np.ravel(mesh.getVertices())
-        sample = np.array(self.sample)
+
         # Plot outlier trajectories
-        outliers_idx = self.densityPlot.computeOutlierIndices()
+        outlier_samples = np.array(self.getOutlierSamples())
 
-        if outliers_idx.size != 0:
-            outlier_samples = sample[:, outliers_idx]
-
+        if outlier_samples.size != 0:
             for outlier_sample in outlier_samples.T:
                 curve = ot.Curve(t, outlier_sample)
                 curve.setColor('red')
                 graph.add(curve)
 
         # Plot inlier trajectories
-        inlier_indices = self.densityPlot.computeOutlierIndices(False)
-        inlier_samples = sample[:, inlier_indices]
+        inlier_samples = np.array(self.getInlierSamples())
 
         if drawInliers:
             for inlier_sample in inlier_samples.T:
@@ -238,11 +235,21 @@ class ProcessHighDensityRegionAlgorithm:
         curve.setColor('black')
         graph.add(curve)
 
-        return inlier_samples, graph
+        return graph
 
     def computeOutlierIndices(self):
         indices = self.densityPlot.computeOutlierIndices()
         return indices
+
+    def getInlierSamples(self):
+        indices = self.densityPlot.computeOutlierIndices(False)
+        inlier_samples = np.array(self.sample)[:, indices]
+        return ot.Sample(inlier_samples)
+
+    def getOutlierSamples(self):
+        indices = self.densityPlot.computeOutlierIndices()
+        outlier_samples = np.array(self.sample)[:, indices]
+        return ot.Sample(outlier_samples)
 
     def getNumberOfTrajectories(self):
         return self.processSample.getSize()

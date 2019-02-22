@@ -63,11 +63,11 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     plt.show()
 
     # Plot outlier trajectories
-    _, graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
+    graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
     View(graph)
     plt.show()
 
-    _, graph = hdr.drawOutlierTrajectories()
+    graph = hdr.drawOutlierTrajectories()
     View(graph)
     plt.show()
 
