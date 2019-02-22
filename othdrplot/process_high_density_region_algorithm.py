@@ -138,7 +138,17 @@ class ProcessHighDensityRegionAlgorithm:
         :return: HDR in an OpenTURNS graph object.
         :rtype: :class:`openturns.Graph`
         """
-        graph = self.densityPlot.drawContour(drawData, drawOutliers)
+        graph = ot.Graph('High Density Region draw', '', '', True, 'topright')
+
+        graph.add(self.densityPlot.drawContour())
+
+        if drawData:
+            graph.add(self.densityPlot.drawInliers())
+            graph.add(self.densityPlot.drawOutliers())
+        elif drawOutliers:
+            graph.add(self.densityPlot.drawOutliers())
+        else:
+            graph.add(self.densityPlot.drawInliers())
 
         return graph
 

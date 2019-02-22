@@ -95,7 +95,7 @@ class HighDensityRegionAlgorithm:
 
         :param bool inliers: Whether to draw inliers or outliers.
         :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
-        :rtype: :class:`openturns.Graph` or :class:`openturns.Pairs`
+        :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
         if inliers:
             idx = self.computeOutlierIndices(False)
@@ -120,20 +120,28 @@ class HighDensityRegionAlgorithm:
 
         return cloud
 
-    def drawContour(self, drawData=False, drawOutliers=True):
-        """Plot High Density Region.
+    def drawInliers(self):
+        """Draw inliers.
 
-        If :attr:`drawData`, the whole sample is drawn. Otherwise, depending on
-        :attr:`drawOutliers` it will either show the outliers or the inliers
-        only.
-
-        :param bool drawData: Plot inliers and outliers.
-        :param bool drawOutliers: Whether to draw inliers or outliers.
-        :return: OpenTURNS Graph object.
-        :rtype: :class:`openturns.Graph`
+        :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
+        :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
-        graph = ot.Graph('High Density Region draw', '', '', True, 'topright')
+        return self._inliers_outliers(inliers=True)
 
+    def drawOutliers(self):
+        """Draw outliers.
+
+        :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
+        :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
+        """
+        return self._inliers_outliers(inliers=False)
+
+    def drawContour(self):
+        """Draw contour.
+
+        :return: OpenTURNS Contour object.
+        :rtype: :class:`openturns.Contour`
+        """
         if self.dim == 2:
             # Use a regular grid to compute probability response surface
             X1min = self.sample[:, 0].getMin()[0]
@@ -160,23 +168,7 @@ class HighDensityRegionAlgorithm:
             contour = ot.Contour(xx, yy, data, self.pvalues,
                                  ot.Description(labels))
             contour.setColor('black')
-
-            xlabel, ylabel = self.sample.getDescription()
-            graph.setXTitle(xlabel)
-            graph.setYTitle(ylabel)
-            graph.add(contour)
-
-        if drawData:
-            graph.add(self._inliers_outliers(inliers=True))
-
-            outliers = self._inliers_outliers(inliers=False)
-            if outliers is not None:
-                graph.add(outliers)
-        elif drawOutliers:
-            graph.add(self._inliers_outliers(inliers=True))
         else:
-            outliers = self._inliers_outliers(inliers=False)
-            if outliers is not None:
-                graph.add(outliers)
+            raise NotImplemented('Contour in 2D is not yet supported.')
 
-        return graph
+        return contour
