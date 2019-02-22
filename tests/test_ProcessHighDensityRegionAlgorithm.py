@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from mock import patch
 from numpy.testing import assert_equal, assert_array_almost_equal
 import openturns as ot
+from openturns.viewer import View
 from othdrplot import ProcessHighDensityRegionAlgorithm
 
 
@@ -19,58 +20,63 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling', 'true')
     ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetSamplingSize',
                        str(numberOfPointsForSampling))
-    #
+
+    # Dataset
     fname = os.path.join(os.path.dirname(__file__), 'data', 'npfda-elnino.dat')
-    dataR = np.loadtxt(fname)
+    data = np.loadtxt(fname)
 
     # Create the mesh
-    numberOfNodes = dataR.shape[1]
-    myMesher = ot.IntervalMesher([numberOfNodes - 1])
-    myInterval = ot.Interval([0.0], [1.0])
-    myMesh = myMesher.build(myInterval)
+    n_nodes = data.shape[1]
+    mesher = ot.IntervalMesher([n_nodes - 1])
+    Interval = ot.Interval([0.0], [1.0])
+    mesh = mesher.build(Interval)
 
     # Create the ProcessSample from the data
-    numberOfFields = dataR.shape[0]
-    dimensionOfFields = 1
-    myps = ot.ProcessSample(myMesh, numberOfFields, dimensionOfFields)
-    for i in range(numberOfFields):
-        thisTrajectory = ot.Sample(dataR[i, :], 1)
-        myps[i] = ot.Field(myMesh, thisTrajectory)
+    n_fields = data.shape[0]
+    dim_fields = 1
+    sample = ot.ProcessSample(mesh, n_fields, dim_fields)
+    for i in range(n_fields):
+        trajectory = ot.Sample(data[i, :], 1)
+        sample[i] = ot.Field(mesh, trajectory)
 
     # Compute HDRPlot
-    myhdrplot = ProcessHighDensityRegionAlgorithm(myps)
-    myhdrplot.setContoursAlpha([0.8, 0.5])
-    myhdrplot.setOutlierAlpha(0.8)
-    myhdrplot.run()
-    myhdrplot.summary()
-    myhdrplot.dimensionReductionSummary()
+    hdrplot = ProcessHighDensityRegionAlgorithm(sample)
+    hdrplot.setContoursAlpha([0.8, 0.5])
+    hdrplot.setOutlierAlpha(0.8)
+    hdrplot.run()
+    hdrplot.summary()
+    hdrplot.dimensionReductionSummary()
 
     # Plot ACP
-    myhdrplot.plotDimensionReduction()
-    plt.show()
+    graph = hdrplot.plotDimensionReduction()
+    View(graph)
+    plt.show(graph)
 
     # Plot Density
-    plotData = True
-    plotOutliers = True
-    myhdrplot.plotDensity(plotData, plotOutliers)
+    graph = hdrplot.plotDensity()
+    View(graph)
     plt.show()
 
     # Plot trajectories
-    myhdrplot.plotTrajectories()
+    graph = hdrplot.plotTrajectories(discreteMean=True)
+    View(graph)
     plt.show()
 
     # Plot outlier trajectories
-    myhdrplot.plotOutlierTrajectories()
+    graph = hdrplot.plotOutlierTrajectories(plotInliers=True, discreteMean=True)
     plt.show()
 
-    outlierIndices = myhdrplot.computeOutlierIndices()
-    expected_outlierIndices = [3, 7, 22, 32, 33, 41, 47]
-    assert_equal(outlierIndices, expected_outlierIndices)
+    graph = hdrplot.plotOutlierTrajectories()
+    plt.show()
+
+    outlier_indices = hdrplot.computeOutlierIndices()
+    expected_outlier_indices = [3, 7, 22, 32, 33, 41, 47]
+    assert_equal(outlier_indices, expected_outlier_indices)
 
     # Check data
-    assert_equal(myhdrplot.getNumberOfTrajectories(), 54)
-    assert_equal(myhdrplot.getNumberOfVertices(), 12)
-    assert_equal(myhdrplot.getNumberOfComponents(), 2)
-    assert_array_almost_equal(myhdrplot.getPartOfExplainedVariance(), 0.86569783, 4)
-    assert_array_almost_equal(myhdrplot.getExplainedVarianceRatio(), [
-                              0.60759627, 0.25810156], 4)
+    assert_equal(hdrplot.getNumberOfTrajectories(), 54)
+    assert_equal(hdrplot.getNumberOfVertices(), 12)
+    assert_equal(hdrplot.getNumberOfComponents(), 2)
+    assert_array_almost_equal(hdrplot.getPartOfExplainedVariance(), 0.86569783, 4)
+    assert_array_almost_equal(hdrplot.getExplainedVarianceRatio(),
+                              [0.60759627, 0.25810156], 4)

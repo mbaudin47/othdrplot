@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2018 EDF.
 """
-Un composant pour créer des ProcessHighDensityRegionAlgorithm.
-
-TODO : identifier la trajectoire de plus forte densité
-
-TODO : proposer une alternative pour la réduction de dimension : Karhunen-Loève
-
-Références : TODO
+Component to create ProcessHighDensityRegionAlgorithm.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,26 +10,35 @@ from .high_density_region_algorithm import HighDensityRegionAlgorithm
 
 
 class ProcessHighDensityRegionAlgorithm:
-    def __init__(self, processSample):
-        '''
-        Create a new DensityPlot based on a ProcessSample and a distribution.
-        '''
+    """ProcessHighDensityRegionAlgorithm."""
+
+    def __init__(self, processSample, numberOfComponents=2):
+        """Density plot based on a :attr:`ProcessSample`.
+
+        :param processSample: Process sample.
+        :param int numberOfComponents: Number of components to use.
+        :type processSample: :class:`openturns.ProcessSample`
+        """
         self.processSample = processSample
-        # Create data from procesSample : each column is a trajectory
-        mymesh = processSample.getMesh()
-        self.verticesNumber = mymesh.getVerticesNumber()
+
+        # Create data from processSample : each column is a trajectory
+        mesh = processSample.getMesh()
+        self.verticesNumber = mesh.getVerticesNumber()
         self.sample = ot.Sample(self.verticesNumber, self.processSample.getSize())
-        numberOfTrajectories = self.processSample.getSize()
-        for i in range(numberOfTrajectories):
-            thisTrajectory = self.processSample[i]
-            self.sample[:, i] = thisTrajectory.getValues()
+        self.n_trajectories = self.processSample.getSize()
+
+        for i in range(self.n_trajectories):
+            trajectory = self.processSample[i]
+            self.sample[:, i] = trajectory.getValues()
+
         # Check dimension
         dim = processSample.getDimension()
         if dim != 1:
             raise ValueError(
-                'The dimension of the process sample must be equal to 1, but current dimension is %d.' % (dim))
+                'The dimension of the process sample must be equal to 1, but '
+                'current dimension is %d.' % (dim))
         self.principalComponents = None
-        self.numberOfComponents = 2
+        self.numberOfComponents = numberOfComponents
         self.densityPlot = None
         self.densityPlot = None
         # The list of probabilities to create the contour
@@ -50,28 +53,35 @@ class ProcessHighDensityRegionAlgorithm:
         self.outlierAlpha = outlierAlpha
 
     def run(self):
+        """Sequencially run PCA and KS."""
         self.runPCA()
         self.runKS()
 
     def runPCA(self):
-        # Perform PCA
+        """Perform PCA."""
         data = np.array(self.sample).T
         # Make the column-mean zero
         columnmean = data.mean(axis=0)
         for i in range(self.verticesNumber):
             data[:, i] = data[:, i] - columnmean[i]
+
         # Compute SVD of the matrix
-        mymatrix = ot.Matrix(data)
-        singular_values, U, VT = mymatrix.computeSVD(True)
+        matrix = ot.Matrix(data)
+        singular_values, U, VT = matrix.computeSVD(True)
         V = VT.transpose()
+
         # Truncate
         VL = V[:, 0:self.numberOfComponents]
         # Project
-        self.principalComponents = np.array(mymatrix * VL)
+        self.principalComponents = ot.Sample(np.array(matrix * VL))
+        labels = ['PC' + str(i) for i in range(self.numberOfComponents)]
+        self.principalComponents.setDescription(labels)
+
         # Compute explained variance
         explained_variance = ot.Point(self.verticesNumber)
         for i in range(self.verticesNumber):
-            explained_variance[i] = singular_values[i]**2
+            explained_variance[i] = singular_values[i] ** 2
+
         n_samples = self.processSample.getSize()
         explained_variance /= n_samples - 1
         # Compute total variance
@@ -82,15 +92,15 @@ class ProcessHighDensityRegionAlgorithm:
         self.explained_variance_ratio = explained_variance_ratio[0:self.numberOfComponents]
 
     def runKS(self):
-        # Create kernel smoothing
-        myks = ot.KernelSmoothing()
-        principalComponentsSample = ot.Sample(self.principalComponents)
-        sampleDistribution = myks.build(principalComponentsSample)
+        """Create kernel smoothing."""
+        ks = ot.KernelSmoothing()
+        sample_distribution = ks.build(self.principalComponents)
         # Create DensityPlot
         self.densityPlot = HighDensityRegionAlgorithm(
-            principalComponentsSample, sampleDistribution)
+            self.principalComponents, sample_distribution)
         self.densityPlot.setContoursAlpha(self.contoursAlpha)
         self.densityPlot.setOutlierAlpha(self.outlierAlpha)
+
         self.densityPlot.run()
 
     def summary(self):
@@ -105,61 +115,102 @@ class ProcessHighDensityRegionAlgorithm:
               % str(self.explained_variance_ratio))
 
     def plotDimensionReduction(self):
-        fig, ax = plt.subplots()
-        ax.scatter(self.principalComponents[:, 0], self.principalComponents[:, 1])
-        ax.set_xlabel("PC1")
-        ax.set_ylabel("PC2")
+        """Pairplot of the principal components.
 
-        return fig, ax
+        :return: OpenTURNS Graph object.
+        :rtype: :class:`openturns.Graph`
+        """
+        graph = ot.Graph('Reduced Space', '', '', True, 'topright')
+        cloud = ot.Pairs(self.principalComponents)
+        cloud.setLabels(self.principalComponents.getDescription())
+        graph.add(cloud)
 
-    def plotDensity(self, plotData, plotOutliers):
-        # Draw contour
-        fig, ax = self.densityPlot.plotContour(plotData, plotOutliers)
+        return graph
 
-        return fig, ax
+    def plotDensity(self, plotData=False, plotOutliers=True):
+        """Density plot based on HDR.
 
-    def plotTrajectories(self):
-        mymesh = self.processSample.getMesh()
-        t = np.array(mymesh.getVertices())
+        If :attr:`plotData`, the whole sample is drawn. Otherwise, depending on
+        :attr:`plotOutliers` it will either show the outliers or the inliers
+        only.
 
-        fig, ax = plt.subplots()
-        ax.plot(t, self.sample, "b-")
+        :param bool plotData: Plot inliers and outliers.
+        :param bool plotOutliers: Whether to plot inliers or outliers.
+        :return: HDR in an OpenTURNS graph object.
+        :rtype: :class:`openturns.Graph`
+        """
+        graph = self.densityPlot.plotContour(plotData, plotOutliers)
+
+        return graph
+
+    def plotTrajectories(self, discreteMean=False):
+        """Plot trajectories from the :attr:`ProcessSample`.
+
+        :param bool discreteMean: Whether to compute the mean per vertex.
+        :return: OpenTURNS graph object.
+        :rtype: :class:`openturns.Graph`
+        """
+        graph = ot.Graph('Trajectories', '', '', True, 'topright')
+
+        mesh = self.processSample.getMesh()
+        t = np.array(mesh.getVertices())
+        for i in range(self.n_trajectories):
+            traj_curves = ot.Curve(t, self.sample[:, i])
+            graph.add(traj_curves)
+
         # Plot mean
-        meanField = self.processSample.computeMean()
-        ax.plot(t, meanField.getValues(), "k-", label="Mean")
-        ax.legend()
+        if discreteMean:
+            mean_field = self.processSample.computeMean()
+        else:
+            mean_field = self.processSample[self.densityPlot.idx_mode]
 
-        return fig, ax
+        mean_curve = ot.Curve(t, mean_field.getValues(), 'Mode')
+        mean_curve.setColor('black')
+        mean_curve.setLineWidth(2)
+        graph.add(mean_curve)
 
-    def plotOutlierTrajectories(self, plotInliner=False):
+        return graph
+
+    def plotOutlierTrajectories(self, plotInliers=False, discreteMean=False):
+        """Plot trajectories with confidence intervals from the :attr:`ProcessSample`.
+
+        :param bool plotInliers: Whether to plot inliers or not.
+        :param bool discreteMean: Whether to compute the mean per vertex or
+          by minimal volume levelset using the distribution.
+        """
         # Get the mesh
-        mymesh = self.processSample.getMesh()
-        t = np.ravel(mymesh.getVertices())
+        mesh = self.processSample.getMesh()
+        t = np.ravel(mesh.getVertices())
         dataArray = np.array(self.sample)
         # Plot outlier trajectories
-        outlierIndices = self.densityPlot.computeOutlierIndices()
+        outlier_idx = self.densityPlot.computeOutlierIndices()
 
         fig, ax = plt.subplots()
 
-        if (outlierIndices.size != 0):
-            outlierSample = dataArray[:, outlierIndices]
-            ax.plot(t, outlierSample, "r-")
+        if outlier_idx.size != 0:
+            outlier_sample = dataArray[:, outlier_idx]
+            ax.plot(t, outlier_sample, "r-")
 
         # Plot inlier trajectories
         inlierIndices = self.densityPlot.computeOutlierIndices(False)
         inlierSample = dataArray[:, inlierIndices]
 
-        if plotInliner:
+        if plotInliers:
             ax.plot(t, inlierSample, "b-")
 
         # Plot inlier bounds
-        inlierMin = np.min(inlierSample, axis=1)
+        inlier_min = np.min(inlierSample, axis=1)
         inlierMax = np.max(inlierSample, axis=1)
-        ax.fill_between(t, inlierMin, inlierMax, where=inlierMax >= inlierMin,
-                        facecolor='green', label="Inlier at alpha=%.4f" % (self.outlierAlpha))
+        ax.fill_between(t, inlier_min, inlierMax, facecolor='green',
+                        where=inlierMax >= inlier_min,
+                        label="Inlier at alpha=%.4f" % (self.outlierAlpha))
         # Plot mean
-        meanField = self.processSample.computeMean()
-        ax.plot(t, meanField.getValues(), "k-", label="Mean")
+        if discreteMean:
+            mean_field = self.processSample.computeMean()
+        else:
+            mean_field = self.processSample[self.densityPlot.idx_mode]
+
+        ax.plot(t, mean_field.getValues(), "k-", label="Mean")
         ax.set_title("Outliers at alpha=%.4f" % (self.densityPlot.outlierAlpha))
         ax.legend()
 
