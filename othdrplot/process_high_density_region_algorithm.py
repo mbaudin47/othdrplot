@@ -4,7 +4,6 @@
 Component to create ProcessHighDensityRegionAlgorithm.
 """
 import numpy as np
-import matplotlib.pyplot as plt
 import openturns as ot
 from .high_density_region_algorithm import HighDensityRegionAlgorithm
 
@@ -158,16 +157,16 @@ class ProcessHighDensityRegionAlgorithm:
             traj_curves = ot.Curve(t, self.sample[:, i])
             graph.add(traj_curves)
 
-        # Plot mean
+        # Plot central curve
         if discreteMean:
-            mean_field = self.processSample.computeMean()
+            central_field = self.processSample.computeMean()
         else:
-            mean_field = self.processSample[self.densityPlot.idx_mode]
+            central_field = self.processSample[self.densityPlot.idx_mode]
 
-        mean_curve = ot.Curve(t, mean_field.getValues(), 'Mode')
-        mean_curve.setColor('black')
-        mean_curve.setLineWidth(2)
-        graph.add(mean_curve)
+        central_curve = ot.Curve(t, central_field.getValues(), 'Central curve')
+        central_curve.setColor('black')
+        central_curve.setLineWidth(2)
+        graph.add(central_curve)
 
         return graph
 
@@ -178,43 +177,68 @@ class ProcessHighDensityRegionAlgorithm:
         :param bool discreteMean: Whether to compute the mean per vertex or
           by minimal volume levelset using the distribution.
         """
+        graph = ot.Graph("Outliers at alpha=%.4f" % (self.densityPlot.outlierAlpha),
+                         '', '', True, 'topright')
+
         # Get the mesh
         mesh = self.processSample.getMesh()
         t = np.ravel(mesh.getVertices())
-        dataArray = np.array(self.sample)
+        sample = np.array(self.sample)
         # Plot outlier trajectories
-        outlier_idx = self.densityPlot.computeOutlierIndices()
+        outliers_idx = self.densityPlot.computeOutlierIndices()
 
-        fig, ax = plt.subplots()
+        if outliers_idx.size != 0:
+            outlier_samples = sample[:, outliers_idx]
 
-        if outlier_idx.size != 0:
-            outlier_sample = dataArray[:, outlier_idx]
-            ax.plot(t, outlier_sample, "r-")
+            for outlier_sample in outlier_samples.T:
+                curve = ot.Curve(t, outlier_sample)
+                curve.setColor('red')
+                graph.add(curve)
 
         # Plot inlier trajectories
-        inlierIndices = self.densityPlot.computeOutlierIndices(False)
-        inlierSample = dataArray[:, inlierIndices]
+        inlier_indices = self.densityPlot.computeOutlierIndices(False)
+        inlier_samples = sample[:, inlier_indices]
 
         if plotInliers:
-            ax.plot(t, inlierSample, "b-")
+            for inlier_sample in inlier_samples.T:
+                curve = ot.Curve(t, inlier_sample)
+                curve.setColor('blue')
+                graph.add(curve)
 
         # Plot inlier bounds
-        inlier_min = np.min(inlierSample, axis=1)
-        inlierMax = np.max(inlierSample, axis=1)
-        ax.fill_between(t, inlier_min, inlierMax, facecolor='green',
-                        where=inlierMax >= inlier_min,
-                        label="Inlier at alpha=%.4f" % (self.outlierAlpha))
-        # Plot mean
+
+        def fill_between_(lower, upper, legend):
+            """Draw a shaded area between two curves."""
+            disc = len(lower)
+            palette = ot.Drawable.BuildDefaultPalette(2)[1]
+            poly_data = [[lower[i], lower[i + 1], upper[i + 1], upper[i]]
+                         for i in range(disc - 1)]
+
+            polygon = [ot.Polygon(poly_data[i], palette, palette)
+                       for i in range(disc - 1)]
+            bounds_poly = ot.PolygonArray(polygon)
+            bounds_poly.setLegend(legend)
+
+            return bounds_poly
+
+        inlier_min = list(zip(t, np.min(inlier_samples, axis=1)))
+        inlier_max = list(zip(t, np.max(inlier_samples, axis=1)))
+
+        bounds = fill_between_(inlier_min, inlier_max,
+                               "Inlier at alpha=%.4f" % (self.outlierAlpha))
+        graph.add(bounds)
+
+        # Plot central curve
         if discreteMean:
-            mean_field = self.processSample.computeMean()
+            central_field = self.processSample.computeMean()
         else:
-            mean_field = self.processSample[self.densityPlot.idx_mode]
+            central_field = self.processSample[self.densityPlot.idx_mode]
 
-        ax.plot(t, mean_field.getValues(), "k-", label="Mean")
-        ax.set_title("Outliers at alpha=%.4f" % (self.densityPlot.outlierAlpha))
-        ax.legend()
+        curve = ot.Curve(t[:, None], central_field.getValues(), 'Central curve')
+        curve.setColor('black')
+        graph.add(curve)
 
-        return inlierSample, fig, ax
+        return inlier_samples, graph
 
     def computeOutlierIndices(self):
         indices = self.densityPlot.computeOutlierIndices()
