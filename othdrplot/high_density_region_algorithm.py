@@ -18,7 +18,7 @@ class HighDensityRegionAlgorithm:
         :type sample: :class:`openturns.Sample`
         :type distribution: :class:`openturns.Distribution`
         """
-        # Number of points per dim to plot the contour
+        # Number of points per dim to draw the contour
         self.numberOfPointsInXAxis = 30
         self.numberOfPointsInYAxis = 30
 
@@ -76,7 +76,7 @@ class HighDensityRegionAlgorithm:
         else:
             sample_idx = np.where(np.array(flag) != 0)[0]
 
-        return sample_idx
+        return list(sample_idx)
 
     def setnumberOfPointsInXAxis(self, numberOfPointsInXAxis):
         self.numberOfPointsInXAxis = numberOfPointsInXAxis
@@ -91,11 +91,11 @@ class HighDensityRegionAlgorithm:
         self.outlierAlpha = outlierAlpha
 
     def _inliers_outliers(self, inliers=True):
-        """Inliers or outliers cloud ploting.
+        """Inliers or outliers cloud drawing.
 
-        :param bool inliers: Whether to plot inliers or outliers.
+        :param bool inliers: Whether to draw inliers or outliers.
         :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
-        :rtype: :class:`openturns.Graph` or :class:`openturns.Pairs`
+        :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
         if inliers:
             idx = self.computeOutlierIndices(False)
@@ -120,20 +120,28 @@ class HighDensityRegionAlgorithm:
 
         return cloud
 
-    def plotContour(self, plotData=False, plotOutliers=True):
-        """Plot High Density Region.
+    def drawInliers(self):
+        """Draw inliers.
 
-        If :attr:`plotData`, the whole sample is drawn. Otherwise, depending on
-        :attr:`plotOutliers` it will either show the outliers or the inliers
-        only.
-
-        :param bool plotData: Plot inliers and outliers.
-        :param bool plotOutliers: Whether to plot inliers or outliers.
-        :return: OpenTURNS Graph object.
-        :rtype: :class:`openturns.Graph`
+        :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
+        :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
-        graph = ot.Graph('High Density Region plot', '', '', True, 'topright')
+        return self._inliers_outliers(inliers=True)
 
+    def drawOutliers(self):
+        """Draw outliers.
+
+        :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
+        :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
+        """
+        return self._inliers_outliers(inliers=False)
+
+    def drawContour(self):
+        """Draw contour.
+
+        :return: OpenTURNS Contour object.
+        :rtype: :class:`openturns.Contour`
+        """
         if self.dim == 2:
             # Use a regular grid to compute probability response surface
             X1min = self.sample[:, 0].getMin()[0]
@@ -160,23 +168,7 @@ class HighDensityRegionAlgorithm:
             contour = ot.Contour(xx, yy, data, self.pvalues,
                                  ot.Description(labels))
             contour.setColor('black')
-
-            xlabel, ylabel = self.sample.getDescription()
-            graph.setXTitle(xlabel)
-            graph.setYTitle(ylabel)
-            graph.add(contour)
-
-        if plotData:
-            graph.add(self._inliers_outliers(inliers=True))
-
-            outliers = self._inliers_outliers(inliers=False)
-            if outliers is not None:
-                graph.add(outliers)
-        elif plotOutliers:
-            graph.add(self._inliers_outliers(inliers=True))
         else:
-            outliers = self._inliers_outliers(inliers=False)
-            if outliers is not None:
-                graph.add(outliers)
+            raise NotImplemented('Contour in 2D is not yet supported.')
 
-        return graph
+        return contour
