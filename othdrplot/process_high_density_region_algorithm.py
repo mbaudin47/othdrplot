@@ -152,42 +152,18 @@ class ProcessHighDensityRegionAlgorithm:
 
         return graph
 
-    def drawTrajectories(self, discreteMean=False):
-        """Plot trajectories from the :attr:`ProcessSample`.
-
-        :param bool discreteMean: Whether to compute the mean per vertex.
-        :return: OpenTURNS graph object.
-        :rtype: :class:`openturns.Graph`
-        """
-        graph = ot.Graph('Trajectories', '', '', True, 'topright')
-
-        mesh = self.processSample.getMesh()
-        t = np.array(mesh.getVertices())
-        for i in range(self.n_trajectories):
-            traj_curves = ot.Curve(t, self.sample[:, i])
-            graph.add(traj_curves)
-
-        # Plot central curve
-        if discreteMean:
-            central_field = self.processSample.computeMean()
-        else:
-            central_field = self.processSample[self.densityPlot.idx_mode]
-
-        central_curve = ot.Curve(t, central_field.getValues(), 'Central curve')
-        central_curve.setColor('black')
-        central_curve.setLineWidth(2)
-        graph.add(central_curve)
-
-        return graph
-
-    def drawOutlierTrajectories(self, drawInliers=False, discreteMean=False):
-        """Plot trajectories with confidence intervals from the :attr:`ProcessSample`.
+    def drawOutlierTrajectories(self, drawInliers=False, discreteMean=False,
+                                bounds=True):
+        """Plot outlier trajectories from the :attr:`ProcessSample`.
 
         :param bool drawInliers: Whether to draw inliers or not.
         :param bool discreteMean: Whether to compute the mean per vertex or
           by minimal volume levelset using the distribution.
+        :param bool bounds: Whether to plot bounds.
+        :return: OpenTURNS graph object.
+        :rtype: :class:`openturns.Graph`
         """
-        graph = ot.Graph("Outliers at alpha=%.4f" % (self.densityPlot.outlierAlpha),
+        graph = ot.Graph("Outliers at alpha=%.2f" % (self.densityPlot.outlierAlpha),
                          '', '', True, 'topright')
 
         # Get the mesh
@@ -228,12 +204,13 @@ class ProcessHighDensityRegionAlgorithm:
 
             return bounds_poly
 
-        inlier_min = list(zip(t, np.min(inlier_samples, axis=1)))
-        inlier_max = list(zip(t, np.max(inlier_samples, axis=1)))
+        if bounds:
+            inlier_min = list(zip(t, np.min(inlier_samples, axis=1)))
+            inlier_max = list(zip(t, np.max(inlier_samples, axis=1)))
 
-        bounds = fill_between_(inlier_min, inlier_max,
-                               "Inlier at alpha=%.4f" % (self.outlierAlpha))
-        graph.add(bounds)
+            bounds = fill_between_(inlier_min, inlier_max,
+                                   "Confidence interval at alpha=%.2f" % (self.outlierAlpha))
+            graph.add(bounds)
 
         # Plot central curve
         if discreteMean:
