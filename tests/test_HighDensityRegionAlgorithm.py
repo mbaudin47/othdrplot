@@ -12,8 +12,8 @@ from openturns.viewer import View
 from othdrplot import HighDensityRegionAlgorithm
 
 
-@patch("matplotlib.pyplot.show")
-def test_HighDensityRegionAlgorithm(mock_show):
+# @patch("matplotlib.pyplot.show")
+def test_HighDensityRegionAlgorithm():
     ot.RandomGenerator.SetSeed(0)
     numberOfPointsForSampling = 500
     ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling', 'true')
@@ -34,8 +34,7 @@ def test_HighDensityRegionAlgorithm(mock_show):
     # Draw contour/inliers/outliers
     graph = ot.Graph('High Density Region draw', '', '', True, 'topright')
 
-    graph.add(dp.drawContour())
-    View(graph)
+    fig, axs, graphs = dp.drawContour()
     plt.show()
 
     graph.add(dp.drawInliers())

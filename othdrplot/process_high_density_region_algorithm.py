@@ -127,7 +127,7 @@ class ProcessHighDensityRegionAlgorithm:
         return graph
 
     def drawDensity(self, drawData=False, drawOutliers=True):
-        """Density draw based on HDR.
+        """Draw contour.
 
         If :attr:`drawData`, the whole sample is drawn. Otherwise, depending on
         :attr:`drawOutliers` it will either show the outliers or the inliers
@@ -135,22 +135,11 @@ class ProcessHighDensityRegionAlgorithm:
 
         :param bool drawData: Plot inliers and outliers.
         :param bool drawOutliers: Whether to draw inliers or outliers.
-        :return: HDR in an OpenTURNS graph object.
-        :rtype: :class:`openturns.Graph`
+        :returns: figure, axes and OpenTURNS Graph object.
+        :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
+          :class:`openturns.Graph`
         """
-        graph = ot.Graph('High Density Region draw', '', '', True, 'topright')
-
-        graph.add(self.densityPlot.drawContour())
-
-        if drawData:
-            graph.add(self.densityPlot.drawInliers())
-            graph.add(self.densityPlot.drawOutliers())
-        elif drawOutliers:
-            graph.add(self.densityPlot.drawOutliers())
-        else:
-            graph.add(self.densityPlot.drawInliers())
-
-        return graph
+        return self.densityPlot.drawContour(drawData=False, drawOutliers=True)
 
     def drawOutlierTrajectories(self, drawInliers=False, discreteMean=False,
                                 bounds=True):
