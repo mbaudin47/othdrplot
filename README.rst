@@ -61,8 +61,11 @@ The output is the following figure:
 
 .. image::  doc/images/gauss-mixture-OutlierPlot.png
 
+How to install?
+---------------
+
 Requirements
-------------
+............
 
 The dependencies are: 
 
@@ -70,6 +73,16 @@ The dependencies are:
 - `numpy <http://www.numpy.org>`_ >= 0.10
 - `OpenTURNS <http://www.openturns.org>`_ >= 1.12
 - `matplotlib <https://matplotlib.org>`_ >= 1.5.3
+
+
+Installation
+............
+
+Using the latest python version is prefered! Then to install::
+
+    git clone git@github.com:mbaudin47/othdrplot.git
+    cd othdrplot
+    python setup.py install
 
 References
 ----------
