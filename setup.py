@@ -27,7 +27,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name='othdrplot',
-    keywords=("surrogate model"),
+    keywords=("graphics"),
     version='1',
     packages=find_packages(exclude=['doc']),
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
