@@ -37,17 +37,17 @@ def test_HighDensityRegionAlgorithm():
     fig, axs, graphs = dp.drawContour()
     plt.show()
 
+    fig, axs, graphs = dp.drawContour(drawData=True)
+    plt.show()
+
+    fig, axs, graphs = dp.drawContour(drawOutliers=False)
+    plt.show()
+
     graph.add(dp.drawInliers())
     View(graph)
     plt.show()
 
     # Plot data
-    graph.add(dp.drawOutliers())
-    View(graph)
-    plt.show()
-
-    dp.dim = 3
-    graph = ot.Graph('High Density Region draw', '', '', True, 'topright')
     graph.add(dp.drawOutliers())
     View(graph)
     plt.show()

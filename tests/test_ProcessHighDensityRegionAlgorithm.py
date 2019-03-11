@@ -79,6 +79,11 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
 
     # Check higher dimension
     hdr = ProcessHighDensityRegionAlgorithm(sample, numberOfComponents=3)
+    hdr.setOutlierAlpha(0.6)
     hdr.run()
+
     fig, axs, graphs = hdr.drawDensity()
+    plt.show()
+
+    fig, axs, graphs = hdr.drawDensity(drawData=True)
     plt.show()

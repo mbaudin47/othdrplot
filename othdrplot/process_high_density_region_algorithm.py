@@ -139,7 +139,8 @@ class ProcessHighDensityRegionAlgorithm:
         :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
           :class:`openturns.Graph`
         """
-        return self.densityPlot.drawContour(drawData=False, drawOutliers=True)
+        return self.densityPlot.drawContour(drawData=drawData,
+                                            drawOutliers=drawOutliers)
 
     def drawOutlierTrajectories(self, drawInliers=False, discreteMean=False,
                                 bounds=True):
