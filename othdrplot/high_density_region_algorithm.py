@@ -82,14 +82,26 @@ class HighDensityRegionAlgorithm:
     def setnumberOfPointsInXAxis(self, numberOfPointsInXAxis):
         self.numberOfPointsInXAxis = numberOfPointsInXAxis
 
+    def getnumberOfPointsInXAxis(self):
+        return self.numberOfPointsInXAxis
+
     def setnumberOfPointsInYAxis(self, numberOfPointsInYAxis):
         self.numberOfPointsInYAxis = numberOfPointsInYAxis
+
+    def setnumberOfPointsInYAxis(self):
+        return self.numberOfPointsInYAxis
 
     def setContoursAlpha(self, contoursAlpha):
         self.contoursAlpha = contoursAlpha
 
+    def getContoursAlpha(self):
+        return self.contoursAlpha
+
     def setOutlierAlpha(self, outlierAlpha):
         self.outlierAlpha = outlierAlpha
+
+    def getOutlierAlpha(self):
+        return self.outlierAlpha
 
     def _inliers_outliers(self, sample=None, inliers=True):
         """Inliers or outliers cloud drawing.
@@ -177,7 +189,6 @@ class HighDensityRegionAlgorithm:
 
                 if i == j:  # diag
                     pdf_graph = self.distribution.getMarginal(i).drawPDF()
-                    pdf_graph.setLegends([''])
                     graph.add(pdf_graph)
 
                 elif i < j:  # lower corners
@@ -234,6 +245,7 @@ class HighDensityRegionAlgorithm:
                 if j == (self.dim - 1):
                     graph.setXTitle(plabels[i])
 
+                graph.setLegends([''])
                 sub_graph.append(ot.viewer.View(graph, figure=fig, axes=[ax]))
                 sub_ax.append(ax)
 
