@@ -4,6 +4,7 @@
 Component to create HighDensityRegionAlgorithm.
 """
 import numpy as np
+import matplotlib.pyplot as plt
 import openturns as ot
 
 
@@ -81,20 +82,34 @@ class HighDensityRegionAlgorithm:
     def setnumberOfPointsInXAxis(self, numberOfPointsInXAxis):
         self.numberOfPointsInXAxis = numberOfPointsInXAxis
 
+    def getnumberOfPointsInXAxis(self):
+        return self.numberOfPointsInXAxis
+
     def setnumberOfPointsInYAxis(self, numberOfPointsInYAxis):
         self.numberOfPointsInYAxis = numberOfPointsInYAxis
+
+    def setnumberOfPointsInYAxis(self):
+        return self.numberOfPointsInYAxis
 
     def setContoursAlpha(self, contoursAlpha):
         self.contoursAlpha = contoursAlpha
 
+    def getContoursAlpha(self):
+        return self.contoursAlpha
+
     def setOutlierAlpha(self, outlierAlpha):
         self.outlierAlpha = outlierAlpha
 
-    def _inliers_outliers(self, inliers=True):
+    def getOutlierAlpha(self):
+        return self.outlierAlpha
+
+    def _inliers_outliers(self, sample=None, inliers=True):
         """Inliers or outliers cloud drawing.
 
+        :param sample: Sample of size (n_samples, n_dims).
+        :type sample: :class:`openturns.Sample`
         :param bool inliers: Whether to draw inliers or outliers.
-        :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
+        :return: OpenTURNS Cloud or Pair object if :attr:`dim` > 2.
         :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
         if inliers:
@@ -106,13 +121,17 @@ class HighDensityRegionAlgorithm:
             legend = "Outliers at alpha=%.4f" % (self.outlierAlpha)
             marker_color = 'red'
 
-        sample = np.array(self.sample)
+        if sample is None:
+            sample = np.array(self.sample)
+        else:
+            sample = np.asarray(sample)
+
         sample = sample[idx, :]
 
         if sample.size == 0:
             return
 
-        if self.dim == 2:
+        if sample.shape[1] == 2:
             cloud = ot.Cloud(sample, marker_color, self.data_marker, legend)
         else:
             cloud = ot.Pairs(sample, '', self.sample.getDescription(),
@@ -120,55 +139,114 @@ class HighDensityRegionAlgorithm:
 
         return cloud
 
-    def drawInliers(self):
+    def drawInliers(self, sample=None):
         """Draw inliers.
 
+        :param sample: Sample of size (n_samples, n_dims).
+        :type sample: :class:`openturns.Sample`
         :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
         :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
-        return self._inliers_outliers(inliers=True)
+        return self._inliers_outliers(sample=sample, inliers=True)
 
-    def drawOutliers(self):
+    def drawOutliers(self, sample=None):
         """Draw outliers.
 
+        :param sample: Sample of size (n_samples, n_dims).
+        :type sample: :class:`openturns.Sample`
         :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
         :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
-        return self._inliers_outliers(inliers=False)
+        return self._inliers_outliers(sample=sample, inliers=False)
 
-    def drawContour(self):
+    def drawContour(self, drawData=False, drawOutliers=True):
         """Draw contour.
 
-        :return: OpenTURNS Contour object.
-        :rtype: :class:`openturns.Contour`
+        If :attr:`drawData`, the whole sample is drawn. Otherwise, depending on
+        :attr:`drawOutliers` it will either show the outliers or the inliers
+        only.
+
+        :param bool drawData: Plot inliers and outliers.
+        :param bool drawOutliers: Whether to draw inliers or outliers.
+        :returns: figure, axes and OpenTURNS Graph object.
+        :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
+          :class:`openturns.Graph`
         """
-        if self.dim == 2:
-            # Use a regular grid to compute probability response surface
-            X1min = self.sample[:, 0].getMin()[0]
-            X1max = self.sample[:, 0].getMax()[0]
-            X2min = self.sample[:, 1].getMin()[0]
-            X2max = self.sample[:, 1].getMax()[0]
+        plabels = self.sample.getDescription()
 
-            xx = ot.Box([self.numberOfPointsInXAxis],
-                        ot.Interval([X1min], [X1max])).generate()
+        # Bivariate space
+        fig = plt.figure(figsize=(10, 10))
+        sub_ax = []  # Axis stored as a list
+        sub_graph = []
+        # Axis are created and stored top to bottom, left to right
+        for i in range(self.dim):
+            for j in range(self.dim):
+                k = i + j * self.dim + 1
 
-            yy = ot.Box([self.numberOfPointsInXAxis],
-                        ot.Interval([X2min], [X2max])).generate()
+                if i <= j:  # lower triangle
+                    ax = fig.add_subplot(self.dim, self.dim, k)
+                    graph = ot.Graph('', '', '', True, 'topright')
 
-            xy = ot.Box([self.numberOfPointsInXAxis, self.numberOfPointsInXAxis],
-                        ot.Interval([X1min, X2min], [X1max, X2max])).generate()
+                if i == j:  # diag
+                    pdf_graph = self.distribution.getMarginal(i).drawPDF()
+                    graph.add(pdf_graph)
 
-            data = self.distribution.computePDF(xy)
+                elif i < j:  # lower corners
+                    # Use a regular grid to compute probability response surface
+                    X1min = self.sample[:, i].getMin()[0]
+                    X1max = self.sample[:, i].getMax()[0]
+                    X2min = self.sample[:, j].getMin()[0]
+                    X2max = self.sample[:, j].getMax()[0]
 
-            # Label using percentage instead of probability
-            n_contours = len(self.contoursAlpha)
-            labels = ["%.0f %%" % (self.contoursAlpha[i] * 100)
-                      for i in range(n_contours)]
+                    xx = ot.Box([self.numberOfPointsInXAxis],
+                                ot.Interval([X1min], [X1max])).generate()
 
-            contour = ot.Contour(xx, yy, data, self.pvalues,
-                                 ot.Description(labels))
-            contour.setColor('black')
-        else:
-            raise NotImplemented('Contour in 2D is not yet supported.')
+                    yy = ot.Box([self.numberOfPointsInXAxis],
+                                ot.Interval([X2min], [X2max])).generate()
 
-        return contour
+                    xy = ot.Box([self.numberOfPointsInXAxis, self.numberOfPointsInXAxis],
+                                ot.Interval([X1min, X2min], [X1max, X2max])).generate()
+
+                    data = self.distribution.getMarginal([i, j]).computePDF(xy)
+
+                    # Label using percentage instead of probability
+                    n_contours = len(self.contoursAlpha)
+                    labels = ["%.0f %%" % (self.contoursAlpha[i] * 100)
+                              for i in range(n_contours)]
+
+                    contour = ot.Contour(xx, yy, data, self.pvalues,
+                                         ot.Description(labels))
+                    contour.setColor('black')
+
+                    graph.add(contour)
+
+                    sample_ = np.array(self.sample)[:, [i, j]]
+
+                    if drawData:
+                        inliers_ = self.drawInliers(sample=sample_)
+                        outliers_ = self.drawOutliers(sample=sample_)
+
+                        if inliers_ is not None:
+                            graph.add(inliers_)
+                        if outliers_ is not None:
+                            graph.add(outliers_)
+
+                    elif drawOutliers:
+                        outliers_ = self.drawOutliers(sample=sample_)
+                        if outliers_ is not None:
+                            graph.add(outliers_)
+                    else:
+                        inliers_ = self.drawInliers(sample=sample_)
+                        if inliers_ is not None:
+                            graph.add(inliers_)
+
+                if i == 0:
+                    graph.setYTitle(plabels[j])
+                if j == (self.dim - 1):
+                    graph.setXTitle(plabels[i])
+
+                graph.setLegends([''])
+                sub_graph.append(ot.viewer.View(graph, figure=fig, axes=[ax]))
+                sub_ax.append(ax)
+
+        return fig, sub_ax, sub_graph

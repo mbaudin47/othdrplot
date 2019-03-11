@@ -53,13 +53,7 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     plt.show(graph)
 
     # Plot Density
-    graph = hdr.drawDensity()
-    View(graph)
-    plt.show()
-
-    # Plot trajectories
-    graph = hdr.drawTrajectories(discreteMean=True)
-    View(graph)
+    fig, axs, graphs = hdr.drawDensity()
     plt.show()
 
     # Plot outlier trajectories
@@ -67,7 +61,7 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     View(graph)
     plt.show()
 
-    graph = hdr.drawOutlierTrajectories()
+    graph = hdr.drawOutlierTrajectories(bounds=False)
     View(graph)
     plt.show()
 
@@ -82,3 +76,14 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     assert_array_almost_equal(hdr.getPartOfExplainedVariance(), 0.86569783, 4)
     assert_array_almost_equal(hdr.getExplainedVarianceRatio(),
                               [0.60759627, 0.25810156], 4)
+
+    # Check higher dimension
+    hdr = ProcessHighDensityRegionAlgorithm(sample, numberOfComponents=3)
+    hdr.setOutlierAlpha(0.6)
+    hdr.run()
+
+    fig, axs, graphs = hdr.drawDensity()
+    plt.show()
+
+    fig, axs, graphs = hdr.drawDensity(drawData=True)
+    plt.show()
