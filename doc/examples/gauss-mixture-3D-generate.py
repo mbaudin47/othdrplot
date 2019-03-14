@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar  8 10:19:19 2019
-
-@author: c61372
-
-Génère un échantillon en dimension 3
+Generate a 3D sample made of a mixture of two gaussian variables. 
 """
 
 import openturns as ot
