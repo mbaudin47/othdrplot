@@ -88,7 +88,7 @@ class HighDensityRegionAlgorithm:
     def setnumberOfPointsInYAxis(self, numberOfPointsInYAxis):
         self.numberOfPointsInYAxis = numberOfPointsInYAxis
 
-    def setnumberOfPointsInYAxis(self):
+    def getnumberOfPointsInYAxis(self):
         return self.numberOfPointsInYAxis
 
     def setContoursAlpha(self, contoursAlpha):

@@ -12,8 +12,8 @@ from openturns.viewer import View
 from othdrplot import HighDensityRegionAlgorithm
 
 
-# @patch("matplotlib.pyplot.show")
-def test_HighDensityRegionAlgorithm():
+@patch("matplotlib.pyplot.show")
+def test_HighDensityRegionAlgorithm(mock_show):
     ot.RandomGenerator.SetSeed(0)
     numberOfPointsForSampling = 500
     ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling', 'true')

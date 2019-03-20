@@ -7,7 +7,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mock import patch
-from numpy.testing import assert_equal, assert_array_almost_equal
+from numpy.testing import assert_equal
 import openturns as ot
 from openturns.viewer import View
 from othdrplot import ProcessHighDensityRegionAlgorithm
@@ -45,7 +45,6 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     hdr.setOutlierAlpha(0.8)
     hdr.run()
     hdr.summary()
-    hdr.dimensionReductionSummary()
 
     # Plot ACP
     graph = hdr.drawDimensionReduction()
@@ -72,15 +71,15 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     # Check data
     assert_equal(hdr.getNumberOfTrajectories(), 54)
     assert_equal(hdr.getNumberOfVertices(), 12)
-    assert_equal(hdr.getNumberOfComponents(), 2)
-    assert_array_almost_equal(hdr.getPartOfExplainedVariance(), 0.86569783, 4)
-    assert_array_almost_equal(hdr.getExplainedVarianceRatio(),
-                              [0.60759627, 0.25810156], 4)
+    assert_equal(hdr.numberOfComponents, 2)
 
     # Check higher dimension
-    hdr = ProcessHighDensityRegionAlgorithm(sample, numberOfComponents=3)
+    hdr = ProcessHighDensityRegionAlgorithm(sample)
     hdr.setOutlierAlpha(0.6)
+    hdr.setThreshold(0.05)
     hdr.run()
+
+    assert_equal(hdr.numberOfComponents, 3)
 
     fig, axs, graphs = hdr.drawDensity()
     plt.show()
