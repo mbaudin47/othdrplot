@@ -6,6 +6,7 @@ Component to create ProcessHighDensityRegionAlgorithm.
 import numpy as np
 import openturns as ot
 from .high_density_region_algorithm import HighDensityRegionAlgorithm
+from .matrix_plot import MatrixPlot
 
 
 class ProcessHighDensityRegionAlgorithm:
@@ -112,15 +113,14 @@ class ProcessHighDensityRegionAlgorithm:
     def drawDimensionReduction(self):
         """Pairdraw of the principal components.
 
-        :return: OpenTURNS Graph object.
-        :rtype: :class:`openturns.Graph`
+        :returns: figure, axes and OpenTURNS Graph object.
+        :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
+          :class:`openturns.Graph`
         """
-        graph = ot.Graph('Reduced Space', '', '', True, 'topright')
-        cloud = ot.Pairs(self.principalComponents)
-        cloud.setLabels(self.principalComponents.getDescription())
-        graph.add(cloud)
+        mp = MatrixPlot(self.principalComponents)
+        fig, sub_ax, sub_graph = mp.draw()
 
-        return graph
+        return fig, sub_ax, sub_graph
 
     def drawDensity(self, drawData=False, drawOutliers=True):
         """Draw contour.

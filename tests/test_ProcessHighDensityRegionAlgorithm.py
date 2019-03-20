@@ -47,9 +47,8 @@ def test_ProcessHighDensityRegionAlgorithm(mock_show):
     hdr.summary()
 
     # Plot ACP
-    graph = hdr.drawDimensionReduction()
-    View(graph)
-    plt.show(graph)
+    fig, axs, graphs = hdr.drawDimensionReduction()
+    plt.show()
 
     # Plot Density
     fig, axs, graphs = hdr.drawDensity()
