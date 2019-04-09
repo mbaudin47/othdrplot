@@ -6,16 +6,15 @@ Component to create ProcessHighDensityRegionAlgorithm.
 import numpy as np
 import openturns as ot
 from .high_density_region_algorithm import HighDensityRegionAlgorithm
-
+from .matrix_plot import MatrixPlot
 
 class ProcessHighDensityRegionAlgorithm:
     """ProcessHighDensityRegionAlgorithm."""
 
-    def __init__(self, processSample, numberOfComponents=2):
+    def __init__(self, processSample, karhunenLoeveResult = None):
         """Density draw based on a :attr:`ProcessSample`.
 
         :param processSample: Process sample.
-        :param int numberOfComponents: Number of components to use.
         :type processSample: :class:`openturns.ProcessSample`
         """
         self.processSample = processSample
@@ -25,6 +24,15 @@ class ProcessHighDensityRegionAlgorithm:
         self.verticesNumber = mesh.getVerticesNumber()
         self.sample = ot.Sample(self.verticesNumber, self.processSample.getSize())
         self.n_trajectories = self.processSample.getSize()
+        
+        # Create the KLresult, if not provided
+        if karhunenLoeveResult is None:
+            threshold = 0.1 # TODO : set the ResourceMap default setting
+            algo = ot.KarhunenLoeveSVDAlgorithm(processSample,threshold)
+            algo.run()
+            self.karhunenLoeveResult = algo.getResult()
+        else:
+            self.karhunenLoeveResult = karhunenLoeveResult
 
         for i in range(self.n_trajectories):
             trajectory = self.processSample[i]
@@ -37,13 +45,12 @@ class ProcessHighDensityRegionAlgorithm:
                 'The dimension of the process sample must be equal to 1, but '
                 'current dimension is %d.' % (dim))
         self.principalComponents = None
-        self.numberOfComponents = numberOfComponents
         self.densityPlot = None
         self.densityPlot = None
         # The list of probabilities to create the contour
         self.contoursAlpha = [0.9, 0.5, 0.1]
         self.outlierAlpha = 0.9  # The probability for outlier detection
-        self.explained_variance_ratio = None
+        self.threshold = 0.1
 
     def setContoursAlpha(self, contoursAlpha):
         self.contoursAlpha = contoursAlpha
@@ -51,52 +58,45 @@ class ProcessHighDensityRegionAlgorithm:
     def setOutlierAlpha(self, outlierAlpha):
         self.outlierAlpha = outlierAlpha
 
-    def run(self):
-        """Sequencially run PCA and KS."""
-        self.runPCA()
-        self.runKS()
+    def run(self, distribution=None):
+        """Sequencially run DimensionReduction and HDR.
 
-    def runPCA(self):
-        """Perform PCA."""
-        data = np.array(self.sample).T
-        # Make the column-mean zero
-        columnmean = data.mean(axis=0)
-        for i in range(self.verticesNumber):
-            data[:, i] = data[:, i] - columnmean[i]
+        :param KarhunenLoeveResult: Result structure of a Karhunen Loeve
+          algorithm.
+        :param distribution: Probability Density Function of the sample.
+        :type KarhunenLoeveResult: :class:`openturns.KarhunenLoeveResult`
+        :type distribution: :class:`openturns.Distribution`
+        """
+        self.runDimensionReduction()
+        self.runHDR(distribution)
 
-        # Compute SVD of the matrix
-        matrix = ot.Matrix(data)
-        singular_values, U, VT = matrix.computeSVD(True)
-        V = VT.transpose()
+    def runDimensionReduction(self):
+        """Perform dimension reduction.
 
-        # Truncate
-        VL = V[:, 0:self.numberOfComponents]
+        :param KarhunenLoeveResult: Result structure of a Karhunen Loeve
+          algorithm.
+        :type KarhunenLoeveResult: :class:`openturns.KarhunenLoeveResult`
+        """
+
         # Project
-        self.principalComponents = ot.Sample(np.array(matrix * VL))
+        self.principalComponents = self.karhunenLoeveResult.project(self.processSample)
+        self.numberOfComponents = self.principalComponents.getDimension()
         labels = ['PC' + str(i) for i in range(self.numberOfComponents)]
         self.principalComponents.setDescription(labels)
 
-        # Compute explained variance
-        explained_variance = ot.Point(self.verticesNumber)
-        for i in range(self.verticesNumber):
-            explained_variance[i] = singular_values[i] ** 2
+    def runHDR(self, distribution=None):
+        """Create HDR.
 
-        n_samples = self.processSample.getSize()
-        explained_variance /= n_samples - 1
-        # Compute total variance
-        total_var = explained_variance.norm1()
-        # Compute explained variance ratio
-        explained_variance_ratio = explained_variance / total_var
-        # Truncate
-        self.explained_variance_ratio = explained_variance_ratio[0:self.numberOfComponents]
+        :param distribution: Probability Density Function of the sample.
+        :type distribution: :class:`openturns.Distribution`
+        """
+        if distribution is None:
+            ks = ot.KernelSmoothing()
+            distribution = ks.build(self.principalComponents)
 
-    def runKS(self):
-        """Create kernel smoothing."""
-        ks = ot.KernelSmoothing()
-        sample_distribution = ks.build(self.principalComponents)
         # Create DensityPlot
-        self.densityPlot = HighDensityRegionAlgorithm(
-            self.principalComponents, sample_distribution)
+        self.densityPlot = HighDensityRegionAlgorithm(self.principalComponents,
+                                                      distribution)
         self.densityPlot.setContoursAlpha(self.contoursAlpha)
         self.densityPlot.setOutlierAlpha(self.outlierAlpha)
 
@@ -105,26 +105,21 @@ class ProcessHighDensityRegionAlgorithm:
     def summary(self):
         print("Number of trajectories = %d" % (self.processSample.getSize()))
         print("Number of vertices = %d" % (self.verticesNumber))
-
-    def dimensionReductionSummary(self):
-        print("Number of components : %d" % (self.numberOfComponents))
-        s = np.sum(self.explained_variance_ratio)
-        print('Part of variance : %.4f' % (s))
-        print('Explained variance ratio : %s'
-              % str(self.explained_variance_ratio))
+        print("Number of components = %d" % (self.numberOfComponents))
+        threshold = self.karhunenLoeveResult.getThreshold()
+        print("Eigenvalue threshold = %s" % (threshold))
 
     def drawDimensionReduction(self):
         """Pairdraw of the principal components.
 
-        :return: OpenTURNS Graph object.
-        :rtype: :class:`openturns.Graph`
+        :returns: figure, axes and OpenTURNS Graph object.
+        :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
+          :class:`openturns.Graph`
         """
-        graph = ot.Graph('Reduced Space', '', '', True, 'topright')
-        cloud = ot.Pairs(self.principalComponents)
-        cloud.setLabels(self.principalComponents.getDescription())
-        graph.add(cloud)
+        mp = MatrixPlot(self.principalComponents)
+        fig, sub_ax, sub_graph = mp.draw()
 
-        return graph
+        return fig, sub_ax, sub_graph
 
     def drawDensity(self, drawData=False, drawOutliers=True):
         """Draw contour.
@@ -233,12 +228,3 @@ class ProcessHighDensityRegionAlgorithm:
 
     def getNumberOfVertices(self):
         return self.verticesNumber
-
-    def getNumberOfComponents(self):
-        return self.numberOfComponents
-
-    def getExplainedVarianceRatio(self):
-        return self.explained_variance_ratio
-
-    def getPartOfExplainedVariance(self):
-        return np.sum(self.explained_variance_ratio)

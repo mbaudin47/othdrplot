@@ -4,32 +4,41 @@
 Test for MatrixPlot class.
 """
 import os
-from mock import patch
+import unittest
+import matplotlib.pyplot as plt
 import openturns as ot
 from othdrplot import MatrixPlot
 
-@patch("matplotlib.pyplot.show")
-def test_MatrixPlot(mock_show):
-    fname = os.path.join(os.path.dirname(__file__), 'data', 'gauss-mixture.csv')
-    sample = ot.Sample.ImportFromCSVFile(fname)
-    
-    mp = MatrixPlot(sample)
-    mp.draw()
-    
-    ks = ot.KernelSmoothing()
-    distribution = ks.build(sample)
-    mp = MatrixPlot(sample,distribution)
-    mp.draw()
-    
-    fname = os.path.join(os.path.dirname(__file__), 'data', 'gauss-mixture-3D.csv')
-    sample = ot.Sample.ImportFromCSVFile(fname)
-    
-    mp = MatrixPlot(sample)
-    mp.draw()
-    
-    ks = ot.KernelSmoothing()
-    distribution = ks.build(sample)
-    mp = MatrixPlot(sample,distribution)
-    mp.draw()
 
-    # Check data : TODO
+class CheckHDRAlgo(unittest.TestCase):
+
+    def test_MatrixPlot2D(self):
+        fname = os.path.join(os.path.dirname(__file__), 'data', 'gauss-mixture.csv')
+        sample = ot.Sample.ImportFromCSVFile(fname)
+    
+        mp = MatrixPlot(sample)
+        fig, axs, graphs = mp.draw()
+        plt.show()
+    
+        ks = ot.KernelSmoothing()
+        distribution = ks.build(sample)
+        mp = MatrixPlot(sample, distribution)
+        fig, axs, graphs = mp.draw()
+        plt.show()
+    
+    def test_MatrixPlot3D(self):
+        fname = os.path.join(os.path.dirname(__file__), 'data', 'gauss-mixture-3D.csv')
+        sample = ot.Sample.ImportFromCSVFile(fname)
+    
+        mp = MatrixPlot(sample)
+        fig, axs, graphs = mp.draw()
+        plt.show()
+    
+        ks = ot.KernelSmoothing()
+        distribution = ks.build(sample)
+        mp = MatrixPlot(sample, distribution)
+        fig, axs, graphs = mp.draw()
+        plt.show()
+
+if __name__=="__main__":
+    unittest.main()

@@ -90,15 +90,15 @@ References
 .. [Hyndman2009] Rob J Hyndman and Han Lin Shang. Rainb ow plots , bagplots and b oxplots for functional data. Journal of Computational and Graphical Statistics, 19:29-45, 2009
 
 Algorithms
-##########
+----------
 
 There are two classes:
 
-- HighDensityRegionAlgorithm : Un algorithme pour calculer la densité d'un échantillon de points multidimensionnel
-- ProcessHighDensityRegionAlgorithm : Un algorithme pour calculer la densité d'un échantillon de trajectoires 
+- `HighDensityRegionAlgorithm` : Un algorithme pour calculer la densité d'un échantillon de points multidimensionnel
+- `ProcessHighDensityRegionAlgorithm` : Un algorithme pour calculer la densité d'un échantillon de trajectoires 
 
-The HighDensityRegionAlgorithm class
-####################################
+The `HighDensityRegionAlgorithm` class
+......................................
 
 Algorithme pour calculer la densité d'un échantillon de points multidimensionnel
 
@@ -107,33 +107,10 @@ Algorithme pour calculer la densité d'un échantillon de points multidimensionn
 - Calcul des points inliers et outliers
 - Ingrédient : Une méthode pour estimer la densité d'un échantillon de points : kernel smoothing, mélange de gaussienne (otmixmod) 
 
-The ProcessHighDensityRegionAlgorithm class
-###########################################
+The `ProcessHighDensityRegionAlgorithm` class
+.............................................
 
 Algorithme pour calculer la densité d'un échantillon de trajectoires
 
 - Graphique des trajectoires dans la bande à 50% et 95%, outliers
 - Ingrédients : Une méthode de réduction de dimension : ACP
-
-
-Roadmap
-#######
-
-TODO-List  général
-******************
-
-- Créer une classe pour l’ACP. Draft de Géraud. Sortir l’ACP de la classe Process pour pouvoir remplacer par KL
-
-TODO-List  HighDensityRegionAlgorithm 
-*************************************
-
-- pouvoir créer le graphique avec une dimension supérieure à 2 : utiliser un Pairs avec des lignes de contours (actuellement : uniquement dimension 2)
-- créer un exemple pour utiliser un mélange de gaussiennes
-
-TODO-List  ProcessHighDensityRegionAlgorithm 
-********************************************
-
-- print the fraction of explained variance in the title
-- pouvoir choisir une autre méthode de réduction de dimension, comme par exemple avec la réduction de dimension par Karhunen-Loève (actuellement : uniquement par ACP)
-- Pouvoir spécifier la méthode d’estimation de densité que l’on souhaite (actuellement : uniquement KernelSmoothing)
-- méthode de Pamphile
