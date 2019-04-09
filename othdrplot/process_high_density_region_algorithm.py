@@ -8,11 +8,10 @@ import openturns as ot
 from .high_density_region_algorithm import HighDensityRegionAlgorithm
 from .matrix_plot import MatrixPlot
 
-
 class ProcessHighDensityRegionAlgorithm:
     """ProcessHighDensityRegionAlgorithm."""
 
-    def __init__(self, processSample):
+    def __init__(self, processSample, karhunenLoeveResult = None):
         """Density draw based on a :attr:`ProcessSample`.
 
         :param processSample: Process sample.
@@ -25,6 +24,15 @@ class ProcessHighDensityRegionAlgorithm:
         self.verticesNumber = mesh.getVerticesNumber()
         self.sample = ot.Sample(self.verticesNumber, self.processSample.getSize())
         self.n_trajectories = self.processSample.getSize()
+        
+        # Create the KLresult, if not provided
+        if karhunenLoeveResult is None:
+            threshold = 0.1 # TODO : set the ResourceMap default setting
+            algo = ot.KarhunenLoeveSVDAlgorithm(processSample,threshold)
+            algo.run()
+            self.karhunenLoeveResult = algo.getResult()
+        else:
+            self.karhunenLoeveResult = karhunenLoeveResult
 
         for i in range(self.n_trajectories):
             trajectory = self.processSample[i]
@@ -50,13 +58,7 @@ class ProcessHighDensityRegionAlgorithm:
     def setOutlierAlpha(self, outlierAlpha):
         self.outlierAlpha = outlierAlpha
 
-    def getThreshold(self):
-        return self.threshold
-
-    def setThreshold(self, threshold):
-        self.threshold = threshold
-
-    def run(self, KarhunenLoeveResult=None, distribution=None):
+    def run(self, distribution=None):
         """Sequencially run DimensionReduction and HDR.
 
         :param KarhunenLoeveResult: Result structure of a Karhunen Loeve
@@ -65,25 +67,19 @@ class ProcessHighDensityRegionAlgorithm:
         :type KarhunenLoeveResult: :class:`openturns.KarhunenLoeveResult`
         :type distribution: :class:`openturns.Distribution`
         """
-        self.runDimensionReduction(KarhunenLoeveResult)
+        self.runDimensionReduction()
         self.runHDR(distribution)
 
-    def runDimensionReduction(self, KarhunenLoeveResult=None):
+    def runDimensionReduction(self):
         """Perform dimension reduction.
 
         :param KarhunenLoeveResult: Result structure of a Karhunen Loeve
           algorithm.
         :type KarhunenLoeveResult: :class:`openturns.KarhunenLoeveResult`
         """
-        if KarhunenLoeveResult is None:
-            algo = ot.KarhunenLoeveSVDAlgorithm(self.processSample,
-                                                self.threshold)
-            algo.run()
-
-        kl_result = algo.getResult()
 
         # Project
-        self.principalComponents = kl_result.project(self.processSample)
+        self.principalComponents = self.karhunenLoeveResult.project(self.processSample)
         self.numberOfComponents = self.principalComponents.getDimension()
         labels = ['PC' + str(i) for i in range(self.numberOfComponents)]
         self.principalComponents.setDescription(labels)
@@ -109,6 +105,9 @@ class ProcessHighDensityRegionAlgorithm:
     def summary(self):
         print("Number of trajectories = %d" % (self.processSample.getSize()))
         print("Number of vertices = %d" % (self.verticesNumber))
+        print("Number of components = %d" % (self.numberOfComponents))
+        threshold = self.karhunenLoeveResult.getThreshold()
+        print("Eigenvalue threshold = %s" % (threshold))
 
     def drawDimensionReduction(self):
         """Pairdraw of the principal components.
