@@ -32,7 +32,7 @@ class CheckHDRAlgo(unittest.TestCase):
         dp.run()
     
         # Draw contour/inliers/outliers
-        graph = ot.Graph('High Density Region draw', '', '', True, 'topright')
+        graph = ot.Graph('Test High Density Region plot', '', '', True, 'topright')
     
         fig, axs, graphs = dp.drawContour()
         plt.show()
@@ -81,7 +81,7 @@ class CheckHDRAlgo(unittest.TestCase):
         dp.run()
     
         # Draw contour/inliers/outliers
-        graph = ot.Graph('High Density Region draw', '', '', True, 'topright')
+        graph = ot.Graph('Test High Density Region plot', '', '', True, 'topright')
     
         fig, axs, graphs = dp.drawContour()
         plt.show()

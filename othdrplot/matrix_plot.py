@@ -46,7 +46,7 @@ class MatrixPlot:
 
                 if i == j:  # diag
                     if (self.distribution is None):
-                        histo_graph = ot.VisualTest_DrawHistogram(self.sample[:, i])
+                        histo_graph = ot.HistogramFactory().build(self.sample[:, i]).drawPDF()
                         histo_graph.setLegends([''])
                         graph.add(histo_graph)
                     else:
