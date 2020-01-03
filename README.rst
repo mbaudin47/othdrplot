@@ -18,14 +18,14 @@ What is it?
 This project implements the Functional highest density region boxplot technique [Hyndman2009]_.
 It is based on `OpenTURNS <http://www.openturns.org>`_.
 
-When you have functional data (i.e. a curve), you will want to answer
+When you have functional data (i.e. a set of curves), you will want to answer
 some questions such as:
 
 * What is the median curve?
 * Can I draw a confidence interval?
-* Or, is there any outliers?
+* Or, is there any outlier curves?
 
-This module allows you to do exactly this: 
+This module allows you to do this: 
 
 .. code-block:: python
 
@@ -39,7 +39,7 @@ The output is the following figure:
 .. image::  doc/images/npfda-elnino-OutlierTrajectoryPlot.png
 
 With a multivariate sample, the 
-MatrixPlot allows to plot the 
+MatrixPlot class allows to plot the 
 scatter plot matrix, with the density on the diagonal.
 
 .. code-block:: python
@@ -80,9 +80,8 @@ The dependencies are:
 
 - Python >= 2.7 or >= 3.3
 - `numpy <http://www.numpy.org>`_ >= 0.10
-- `OpenTURNS <http://www.openturns.org>`_ >= 1.12
 - `matplotlib <https://matplotlib.org>`_ >= 1.5.3
-
+- `OpenTURNS <http://www.openturns.org>`_ >= 1.14
 
 Installation
 ............

@@ -5,5 +5,4 @@ numpy==1.16.1
 openturns==1.14
 pytest==4.2.0
 attrs==18.2.0
--e git+https://tupui@github.com/tupui/othdrplot.git@4489ac56ec63599ccb989d05439ed3e50a919047#egg=othdrplot
 
