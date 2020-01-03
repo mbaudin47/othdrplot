@@ -116,6 +116,7 @@ This is an algorithm to draw the density of a multivariate sample.
 - Plots the required minimum level sets and the outliers. 
 - Compute and draw the inliers and the outliers, based on the `MatrixPlot`.
 - The main ingredient is distribution of the sample, which is required. 
+
 The basic method to estimate this distribution is kernel smoothing, 
 but any other method can be used, such as a gaussian mixture for example. 
 
@@ -125,13 +126,13 @@ The `ProcessHighDensityRegionAlgorithm` class
 This is an algorithm to draw the density of a process sample. 
 
 - Plots the trajectories in the physical space.
-- Plots the projection of the trajectories in the reduced space, 
-based on the `HighDensityRegionAlgorithm`. 
-- The main ingredients are the dimension reduction method and 
-the method to estimate the density in the reduced space. 
+- Plots the projection of the trajectories in the reduced space, based on the `HighDensityRegionAlgorithm`. 
+- The main ingredients are the dimension reduction method and the method to estimate the density in the reduced space. 
+
 In the current implementation, the dimension reduction must be provided 
 and based on the KarhunenLoeve decomposition (which can be computed 
 from the SVD or other methods as well). 
 The method to estimate the density in the reduced space is necessarily the 
 kernel smoothing in the current implementation. 
+
 
