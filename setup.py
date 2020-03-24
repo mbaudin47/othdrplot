@@ -14,15 +14,13 @@ Usage
 """
 from setuptools import (setup, find_packages)
 
-setup_requires = ['pytest-runner']
-tests_require = ['pytest', 'coverage']
 install_requires = ['numpy>=1.13',
                     'matplotlib>=2.1',
                     'openturns'
                     ]
 extras_require = {'doc': ['sphinx>=1.4', 'nbsphinx', 'jupyter', 'jupyter_client']}
 
-with open("README.rst", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
@@ -32,13 +30,8 @@ setup(
     packages=find_packages(exclude=['doc']),
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
     # Package requirements
-    setup_requires=setup_requires,
-    tests_require=tests_require,
     install_requires=install_requires,
     extras_require=extras_require,
-    # metadata
-    # maintainer="...",
-    # maintainer_email="...",
     description="othdrplot: HDR plot",
     long_description=long_description,
     classifiers=['Development Status :: 5 - Production/Stable',
