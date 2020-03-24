@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 """
 Setup script for othdrplot
 ==========================
@@ -14,33 +14,27 @@ Usage
 """
 from setuptools import (setup, find_packages)
 
-setup_requires = ['pytest-runner']
-tests_require = ['pytest', 'coverage']
 install_requires = ['numpy>=1.13',
                     'matplotlib>=2.1',
-                    'openturns'
+                    'openturns>=1.14'
                     ]
 extras_require = {'doc': ['sphinx>=1.4', 'nbsphinx', 'jupyter', 'jupyter_client']}
 
-with open("README.rst", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name='othdrplot',
     keywords=("graphics"),
-    version='1',
+    version='0.1',
     packages=find_packages(exclude=['doc']),
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
     # Package requirements
-    setup_requires=setup_requires,
-    tests_require=tests_require,
     install_requires=install_requires,
     extras_require=extras_require,
-    # metadata
-    # maintainer="...",
-    # maintainer_email="...",
     description="othdrplot: HDR plot",
     long_description=long_description,
+	long_description_content_type="text/markdown",
     classifiers=['Development Status :: 5 - Production/Stable',
                  'Environment :: Console',
                  'License :: OSI Approved',
@@ -62,5 +56,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     license="LGPL",
-    url="http://www.openturns.org",
+    url="https://github.com/mbaudin47/othdrplot",
 )

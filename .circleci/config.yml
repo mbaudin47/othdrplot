@@ -1,47 +1,20 @@
-# Python CircleCI 2.0 configuration file
-version: 2
+version: 2.1
+
+orbs:
+  python: circleci/python@0.2.1
+
 jobs:
-  build:
-    docker:
-      - image: circleci/python:3.7.1
-
-    working_directory: ~/othdrplot
-
+  build-and-test:
+    executor: python/default
     steps:
       - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
+      - python/install-deps
       - run:
-          name: install dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
+          name: Test
+          command: bash .circleci/run_docker_linux.sh
 
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
-        
-      # run tests!
-      - run:
-          name: run tests
-          no_output_timeout: 10h
-          command: |
-            . venv/bin/activate
-            export MPLBACKEND="Agg"
-            coverage run -m pytest .
-            coverage html
-            mkdir test-reports
-            mv htmlcov test-reports/coverage-report
+workflows:
+  main:
+    jobs:
+      - build-and-test
 
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
-          

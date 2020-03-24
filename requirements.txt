@@ -1,8 +1,7 @@
-coverage==4.5.2
-jupyter==1.0.0
-matplotlib==3.0.2
-numpy==1.16.1
-openturns==1.14
-pytest==4.2.0
-attrs==18.2.0
-
+jupyter
+matplotlib
+numpy
+openturns>=1.14
+jupyterlab
+nbconvert
+notebook

@@ -6,7 +6,7 @@ Component to create HighDensityRegionAlgorithm.
 import numpy as np
 import matplotlib.pyplot as plt
 import openturns as ot
-
+import openturns.viewer as otv
 
 class HighDensityRegionAlgorithm:
     """Compute the Highest Density Region."""
@@ -176,8 +176,6 @@ class HighDensityRegionAlgorithm:
 
         # Bivariate space
         fig = plt.figure(figsize=(10, 10))
-        sub_ax = []  # Axis stored as a list
-        sub_graph = []
         # Axis are created and stored top to bottom, left to right
         for i in range(self.dim):
             for j in range(self.dim):
@@ -246,7 +244,6 @@ class HighDensityRegionAlgorithm:
                     graph.setXTitle(plabels[i])
 
                 graph.setLegends([''])
-                sub_graph.append(ot.viewer.View(graph, figure=fig, axes=[ax]))
-                sub_ax.append(ax)
+                _ = otv.View(graph, figure=fig, axes=[ax])
 
-        return fig, sub_ax, sub_graph
+        return fig

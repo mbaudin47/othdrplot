@@ -117,9 +117,9 @@ class ProcessHighDensityRegionAlgorithm:
           :class:`openturns.Graph`
         """
         mp = MatrixPlot(self.principalComponents)
-        fig, sub_ax, sub_graph = mp.draw()
+        fig = mp.draw()
 
-        return fig, sub_ax, sub_graph
+        return fig
 
     def drawDensity(self, drawData=False, drawOutliers=True):
         """Draw contour.
