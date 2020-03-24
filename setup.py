@@ -16,7 +16,7 @@ from setuptools import (setup, find_packages)
 
 install_requires = ['numpy>=1.13',
                     'matplotlib>=2.1',
-                    'openturns'
+                    'openturns>=1.14'
                     ]
 extras_require = {'doc': ['sphinx>=1.4', 'nbsphinx', 'jupyter', 'jupyter_client']}
 
