@@ -5,8 +5,7 @@ Component to create MatrixPlot.
 """
 import openturns as ot
 import matplotlib.pyplot as plt
-from openturns.viewer import View
-
+import openturns.viewer as otv
 
 class MatrixPlot:
     """MatrixPlot."""
@@ -25,16 +24,14 @@ class MatrixPlot:
         self.size = sample.getSize()
         self.labels = sample.getDescription()
 
-    def draw(self):
+    def draw(self, figsize = (10, 10)):
         """
 
         :returns: figure, axes and OpenTURNS Graph object.
         :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
           :class:`openturns.Graph`
         """
-        fig = plt.figure(figsize=(10, 10))
-        sub_ax = []  # Axis stored as a list
-        sub_graph = []
+        fig = plt.figure(figsize = figsize)
         # Axis are created and stored top to bottom, left to right
         for i in range(self.dim):
             for j in range(self.dim):
@@ -46,9 +43,11 @@ class MatrixPlot:
 
                 if i == j:  # diag
                     if (self.distribution is None):
-                        histo_graph = ot.HistogramFactory().build(self.sample[:, i]).drawPDF()
-                        histo_graph.setLegends([''])
-                        graph.add(histo_graph)
+                        factory = ot.KernelSmoothing()
+                        distribution = factory.build(self.sample[:, i])
+                        estimatedDistribution_graph = distribution.drawPDF()
+                        estimatedDistribution_graph.setLegends([''])
+                        graph.add(estimatedDistribution_graph)
                     else:
                         pdf_graph = self.distribution.getMarginal(i).drawPDF()
                         pdf_graph.setLegends([''])
@@ -64,7 +63,6 @@ class MatrixPlot:
                     graph.setXTitle(self.labels[i])
 
                 graph.setLegends([''])
-                sub_graph.append(ot.viewer.View(graph, figure=fig, axes=[ax]))
-                sub_ax.append(ax)
+                _ = otv.View(graph, figure=fig, axes=[ax])
 
-        return fig, sub_ax, sub_graph
+        return fig    

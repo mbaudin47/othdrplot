@@ -26,7 +26,7 @@ with open("README.md", "r") as fh:
 setup(
     name='othdrplot',
     keywords=("graphics"),
-    version='1',
+    version='0.1',
     packages=find_packages(exclude=['doc']),
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
     # Package requirements
@@ -34,6 +34,7 @@ setup(
     extras_require=extras_require,
     description="othdrplot: HDR plot",
     long_description=long_description,
+	long_description_content_type="text/markdown",
     classifiers=['Development Status :: 5 - Production/Stable',
                  'Environment :: Console',
                  'License :: OSI Approved',
@@ -55,5 +56,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     license="LGPL",
-    url="http://www.openturns.org",
+    url="https://github.com/mbaudin47/othdrplot",
 )

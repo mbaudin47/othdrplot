@@ -65,21 +65,15 @@ class CheckHDRAlgo(unittest.TestCase):
         hdr.summary()
     
         # Plot ACP
-        fig, axs, graphs = hdr.drawDimensionReduction()
-        plt.show()
+        fig = hdr.drawDimensionReduction()
     
         # Plot Density
-        fig, axs, graphs = hdr.drawDensity()
-        plt.show()
+        fig = hdr.drawDensity()
     
         # Plot outlier trajectories
         graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
-        View(graph)
-        plt.show()
     
         graph = hdr.drawOutlierTrajectories(bounds=False)
-        View(graph)
-        plt.show()
     
         outlier_indices = hdr.computeOutlierIndices()
         expected_outlier_indices = [3, 7, 22, 32, 33, 41, 47]
@@ -111,20 +105,14 @@ class CheckHDRAlgo(unittest.TestCase):
     
         assert_equal(hdr.numberOfComponents, 3)
     
-        fig, axs, graphs = hdr.drawDensity()
-        plt.show()
+        fig = hdr.drawDensity()
     
-        fig, axs, graphs = hdr.drawDensity(drawData=True)
-        plt.show()
+        fig = hdr.drawDensity(drawData=True)
 
         # Plot outlier trajectories
         graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
-        View(graph)
-        plt.show()
 
         graph = hdr.drawOutlierTrajectories(bounds=False)
-        View(graph)
-        plt.show()
 
 if __name__=="__main__":
     unittest.main()

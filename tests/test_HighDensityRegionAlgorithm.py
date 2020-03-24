@@ -4,10 +4,8 @@
 Test for ProcessHighDensityRegionAlgorithm class.
 """
 import os
-import matplotlib.pyplot as plt
 from numpy.testing import assert_equal
 import openturns as ot
-from openturns.viewer import View
 from othdrplot import HighDensityRegionAlgorithm
 import unittest
 
@@ -34,23 +32,16 @@ class CheckHDRAlgo(unittest.TestCase):
         # Draw contour/inliers/outliers
         graph = ot.Graph('Test High Density Region plot', '', '', True, 'topright')
     
-        fig, axs, graphs = dp.drawContour()
-        plt.show()
+        fig = dp.drawContour()
     
-        fig, axs, graphs = dp.drawContour(drawData=True)
-        plt.show()
+        fig = dp.drawContour(drawData=True)
     
-        fig, axs, graphs = dp.drawContour(drawOutliers=False)
-        plt.show()
+        fig = dp.drawContour(drawOutliers=False)
     
         graph.add(dp.drawInliers())
-        View(graph)
-        plt.show()
     
         # Plot data
         graph.add(dp.drawOutliers())
-        View(graph)
-        plt.show()
     
         outlierIndices = dp.computeOutlierIndices()
         expected_outlierIndices = [31, 60, 84, 105, 116, 121, 150, 151, 200, 207, 215,
@@ -83,23 +74,16 @@ class CheckHDRAlgo(unittest.TestCase):
         # Draw contour/inliers/outliers
         graph = ot.Graph('Test High Density Region plot', '', '', True, 'topright')
     
-        fig, axs, graphs = dp.drawContour()
-        plt.show()
+        fig = dp.drawContour()
     
-        fig, axs, graphs = dp.drawContour(drawData=True)
-        plt.show()
+        fig = dp.drawContour(drawData=True)
     
-        fig, axs, graphs = dp.drawContour(drawOutliers=False)
-        plt.show()
+        fig = dp.drawContour(drawOutliers=False)
     
         graph.add(dp.drawInliers())
-        View(graph)
-        plt.show()
     
         # Plot data
         graph.add(dp.drawOutliers())
-        View(graph)
-        plt.show()
     
         outlierIndices = dp.computeOutlierIndices()
         expected_outlierIndices = [75, 79, 145, 148, 189, 246, 299, 314, 340, 351, 386, 471]
