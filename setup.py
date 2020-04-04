@@ -20,7 +20,7 @@ with open("README.md", "r") as fh:
 setup(
     name='othdrplot',
     keywords=("graphics"),
-    version='0.0.1',
+    version='1.0',
     packages=find_packages(),
     requires=['numpy',
               'matplotlib',
