@@ -9,6 +9,7 @@ import unittest
 from numpy.testing import assert_equal
 import openturns as ot
 from othdrplot import ProcessHighDensityRegionAlgorithm
+import othdrplot
 
 
 def setup_HDRenv():
@@ -53,8 +54,7 @@ class CheckHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..', 'othdrplot',
-                             'data', 'npfda-elnino.dat')
+        fname = os.path.join(othdrplot.__path__[0], 'data', 'npfda-elnino.dat')
         processSample = readProcessSample(fname)
 
         # Compute HDRPlot
@@ -90,8 +90,7 @@ class CheckHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..', 'othdrplot',
-                             'data', 'npfda-elnino.dat')
+        fname = os.path.join(othdrplot.__path__[0], 'data', 'npfda-elnino.dat')
         processSample = readProcessSample(fname)
 
         # Customize the dimension reduction

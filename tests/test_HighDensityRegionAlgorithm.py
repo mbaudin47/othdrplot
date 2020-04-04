@@ -8,6 +8,7 @@ from numpy.testing import assert_equal
 import openturns as ot
 from othdrplot import HighDensityRegionAlgorithm
 import unittest
+import othdrplot
 
 
 class CheckHDRAlgo(unittest.TestCase):
@@ -21,8 +22,8 @@ class CheckHDRAlgo(unittest.TestCase):
                            str(numberOfPointsForSampling))
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..',
-                             'othdrplot', 'data', 'gauss-mixture.csv')
+        fname = os.path.join(othdrplot.__path__[0], 'data',
+                             'gauss-mixture.csv')
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         # Creation du kernel smoothing
@@ -67,8 +68,8 @@ class CheckHDRAlgo(unittest.TestCase):
                            str(numberOfPointsForSampling))
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..',
-                             'othdrplot', 'data', 'gauss-mixture-3D.csv')
+        fname = os.path.join(othdrplot.__path__[0], 'data',
+                             'gauss-mixture-3D.csv')
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         # Creation du kernel smoothing
