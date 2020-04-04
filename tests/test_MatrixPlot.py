@@ -12,8 +12,8 @@ from othdrplot import MatrixPlot
 class CheckHDRAlgo(unittest.TestCase):
 
     def test_MatrixPlot2D(self):
-        fname = os.path.join(os.path.dirname(__file__), '..', 'data',
-                             'gauss-mixture.csv')
+        fname = os.path.join(os.path.dirname(__file__), '..',
+                             'othdrplot', 'data', 'gauss-mixture.csv')
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         mp = MatrixPlot(sample)
@@ -26,7 +26,7 @@ class CheckHDRAlgo(unittest.TestCase):
 
     def test_MatrixPlot3D(self):
         fname = os.path.join(os.path.dirname(__file__), '..',
-                             'data', 'gauss-mixture-3D.csv')
+                             'othdrplot', 'data', 'gauss-mixture-3D.csv')
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         mp = MatrixPlot(sample)

@@ -21,8 +21,8 @@ class CheckHDRAlgo(unittest.TestCase):
                            str(numberOfPointsForSampling))
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..', 'data',
-                             'gauss-mixture.csv')
+        fname = os.path.join(os.path.dirname(__file__), '..',
+                             'othdrplot', 'data', 'gauss-mixture.csv')
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         # Creation du kernel smoothing
@@ -67,8 +67,8 @@ class CheckHDRAlgo(unittest.TestCase):
                            str(numberOfPointsForSampling))
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..', 'data',
-                             'gauss-mixture-3D.csv')
+        fname = os.path.join(os.path.dirname(__file__), '..',
+                             'othdrplot', 'data', 'gauss-mixture-3D.csv')
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         # Creation du kernel smoothing

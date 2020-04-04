@@ -53,7 +53,7 @@ class CheckHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..',
+        fname = os.path.join(os.path.dirname(__file__), '..', 'othdrplot',
                              'data', 'npfda-elnino.dat')
         processSample = readProcessSample(fname)
 
@@ -90,7 +90,7 @@ class CheckHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(os.path.dirname(__file__), '..',
+        fname = os.path.join(os.path.dirname(__file__), '..', 'othdrplot',
                              'data', 'npfda-elnino.dat')
         processSample = readProcessSample(fname)
 
