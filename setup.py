@@ -43,7 +43,7 @@ setup(
                  'Topic :: Scientific/Engineering',
                  ],
     include_package_data=True,
-    package_data={'othdrplot': ['data/*.csv']},
+    package_data={'othdrplot': ['othdrplot/data/*.csv']},
     license="LGPL",
     url="https://github.com/mbaudin47/othdrplot",
     author="Michaël Baudin and Pamphile Roy",

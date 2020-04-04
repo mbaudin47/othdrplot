@@ -12,6 +12,8 @@ python -c "import openturns; print(openturns.__version__); exit()"
 # Run tests
 cd ..
 
+python doc/examples/demo-matrixplot.py
+
 # Unit tests
 cd tests
 python -m unittest discover .
