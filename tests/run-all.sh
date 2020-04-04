@@ -12,11 +12,11 @@ python -c "import openturns; print(openturns.__version__); exit()"
 # Run tests
 cd ..
 
+python doc/examples/demo-matrixplot.py
+
 # Unit tests
 cd tests
-python test_MatrixPlot.py
-python test_HighDensityRegionAlgorithm.py
-python test_ProcessHighDensityRegionAlgorithm.py
+python -m unittest discover .
 cd ..
 
 # Notebooks in all subdirectories
