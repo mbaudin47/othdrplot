@@ -37,5 +37,6 @@ class CheckHDRAlgo(unittest.TestCase):
         mp = MatrixPlot(sample, distribution)
         fig = mp.draw()
 
+
 if __name__ == "__main__":
     unittest.main()
