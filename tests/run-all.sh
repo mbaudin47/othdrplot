@@ -14,9 +14,7 @@ cd ..
 
 # Unit tests
 cd tests
-python test_MatrixPlot.py
-python test_HighDensityRegionAlgorithm.py
-python test_ProcessHighDensityRegionAlgorithm.py
+python -m unittest discover .
 cd ..
 
 # Notebooks in all subdirectories
