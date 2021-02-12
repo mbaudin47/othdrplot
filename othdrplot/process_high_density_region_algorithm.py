@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2018 EDF.
+# Copyright 2018 - 2021 - EDF-CERFACS.
 """
 Component to create ProcessHighDensityRegionAlgorithm.
 """
@@ -11,32 +11,33 @@ from .high_density_region_algorithm import HighDensityRegionAlgorithm
 class ProcessHighDensityRegionAlgorithm:
     """ProcessHighDensityRegionAlgorithm."""
 
-    def __init__(self, processSample, karhunenLoeveResult=None):
-        """Density draw based on a :attr:`ProcessSample`.
-
-        :param processSample: Process sample.
-        :type processSample: :class:`openturns.ProcessSample`
+    def __init__(
+        self,
+        processSample,
+        reducedComponents,
+        reducedDistribution,
+        alphaLevels=[0.5, 0.9],
+    ):
         """
-        self.processSample = processSample
+        Density draw based on a ProcessSample.
 
-        # Create data from processSample : each column is a trajectory
-        mesh = processSample.getMesh()
-        self.verticesNumber = mesh.getVerticesNumber()
-        self.sample = ot.Sample(self.verticesNumber, self.processSample.getSize())
-        self.n_trajectories = self.processSample.getSize()
-
-        # Create the KLresult, if not provided
-        if karhunenLoeveResult is None:
-            threshold = 0.1  # TODO : set the ResourceMap default setting
-            algo = ot.KarhunenLoeveSVDAlgorithm(processSample, threshold)
-            algo.run()
-            self.karhunenLoeveResult = algo.getResult()
-        else:
-            self.karhunenLoeveResult = karhunenLoeveResult
-
-        for i in range(self.n_trajectories):
-            trajectory = self.processSample[i]
-            self.sample[:, i] = trajectory
+        Parameters
+        ----------
+        processSample : ot.ProcessSample
+            The collection of processes.
+        reducedComponents : ot.Sample
+            The sample in the reduced space.
+        reducedDistribution : ot.Distribution
+            The distribution of points in the reduced space.
+        alphaLevels : list(float)
+            The list of alpha levels for minimum volume level set algorithm.
+        """
+        # Chek input
+        if reducedDistribution.getDimension() != reducedComponents.getDimension():
+            raise ValueError(
+                "Dimension of distribution = %d does not math dimension of reduced sample = %d"
+                % (reducedDistribution.getDimension(), reducedComponents.getDimension())
+            )
 
         # Check dimension
         dim = processSample.getDimension()
@@ -45,13 +46,14 @@ class ProcessHighDensityRegionAlgorithm:
                 "The dimension of the process sample must be equal to 1, but "
                 "current dimension is %d." % (dim)
             )
-        self.principalComponents = None
-        self.densityPlot = None
-        self.densityPlot = None
+        self.processSample = processSample
+        self.reducedDistribution = reducedDistribution
+        self.reducedComponents = reducedComponents
+
+        self.hdrAlgorithm = None
+
         # The list of probabilities to create the contour
-        self.contoursAlpha = [0.9, 0.5, 0.1]
-        self.outlierAlpha = 0.9  # The probability for outlier detection
-        self.threshold = 0.1
+        self.alphaLevels = alphaLevels
 
         # Graphical style
         self.outlier_color = "firebrick3"
@@ -65,121 +67,42 @@ class ProcessHighDensityRegionAlgorithm:
             r, g, b, self.default_confidence_band_alpha
         )
 
-    def setContoursAlpha(self, contoursAlpha):
-        self.contoursAlpha = contoursAlpha
-
-    def setOutlierAlpha(self, outlierAlpha):
-        self.outlierAlpha = outlierAlpha
-
-    def run(self, distribution=None):
-        """Sequencially run DimensionReduction and HDR.
-
-        :param KarhunenLoeveResult: Result structure of a Karhunen Loeve
-          algorithm.
-        :param distribution: Probability Density Function of the sample.
-        :type KarhunenLoeveResult: :class:`openturns.KarhunenLoeveResult`
-        :type distribution: :class:`openturns.Distribution`
+    def run(self):
         """
-        self.runDimensionReduction()
-        self.runHDR(distribution)
-
-    def runDimensionReduction(self):
-        """Perform dimension reduction.
-
-        :param KarhunenLoeveResult: Result structure of a Karhunen Loeve
-          algorithm.
-        :type KarhunenLoeveResult: :class:`openturns.KarhunenLoeveResult`
+        Run high density region algorithm.
         """
-
-        # Project
-        self.principalComponents = self.karhunenLoeveResult.project(self.processSample)
-        self.numberOfComponents = self.principalComponents.getDimension()
-        labels = ["PC" + str(i) for i in range(self.numberOfComponents)]
-        self.principalComponents.setDescription(labels)
-
-    def runHDR(self, distribution=None):
-        """Create HDR.
-
-        :param distribution: Probability Density Function of the sample.
-        :type distribution: :class:`openturns.Distribution`
-        """
-        if distribution is None:
-            ks = ot.KernelSmoothing()
-            distribution = ks.build(self.principalComponents)
-
-        # Create DensityPlot
-        self.densityPlot = HighDensityRegionAlgorithm(
-            self.principalComponents, distribution
+        # Create hdrAlgorithm
+        self.hdrAlgorithm = HighDensityRegionAlgorithm(
+            self.reducedComponents, self.reducedDistribution, self.alphaLevels
         )
-        self.densityPlot.setContoursAlpha(self.contoursAlpha)
-        self.densityPlot.setOutlierAlpha(self.outlierAlpha)
+        self.hdrAlgorithm.run()
 
-        self.densityPlot.run()
-
-    def summary(self):
-        print("Number of trajectories = %d" % (self.processSample.getSize()))
-        print("Number of vertices = %d" % (self.verticesNumber))
-        print("Number of components = %d" % (self.numberOfComponents))
-        threshold = self.karhunenLoeveResult.getThreshold()
-        print("Eigenvalue threshold = %s" % (threshold))
-
-    def drawDimensionReduction(self):
-        """Pairdraw of the principal components.
-
-        :returns: figure, axes and OpenTURNS Graph object.
-        :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
-          :class:`openturns.Graph`
-        """
-        dimension = self.principalComponents.getDimension()
-        distribution = ot.ComposedDistribution(
-            [
-                ot.KernelSmoothing().build(self.principalComponents.getMarginal(i))
-                for i in range(dimension)
-            ]
-        )
-        if dimension == 1:
-            graph = distribution.drawPDF()
-            # Add points on X axis
-            sample_size = self.principalComponents.getSize()
-            data = ot.Sample(sample_size, 2)
-            data[:, 0] = self.principalComponents
-            cloud = ot.Cloud(data)
-            graph.add(cloud)
-        else:
-            graph = ot.VisualTest_DrawPairsMarginals(
-                self.principalComponents, distribution
-            )
-        return graph
-
-    def drawDensity(self, drawInliers=False, drawOutliers=True):
-        """Draw contour.
-
-        If :attr:`drawData`, the whole sample is drawn. Otherwise, depending on
-        :attr:`drawOutliers` it will either show the outliers or the inliers
-        only.
-
-        :param bool drawData: Plot inliers and outliers.
-        :param bool drawOutliers: Whether to draw inliers or outliers.
-        :returns: figure, axes and OpenTURNS Graph object.
-        :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
-          :class:`openturns.Graph`
-        """
-        return self.densityPlot.draw(drawInliers=drawInliers, drawOutliers=drawOutliers)
-
-    def drawOutlierTrajectories(
+    def draw(
         self, drawInliers=False, discreteMean=False, bounds=True
     ):
-        """Plot outlier trajectories from the :attr:`ProcessSample`.
+        """
+        Plot outlier trajectories based on HDR.
 
-        :param bool drawInliers: Whether to draw inliers or not.
-        :param bool discreteMean: Whether to compute the mean per vertex or
-          by minimal volume levelset using the distribution.
-        :param bool bounds: Whether to plot bounds.
-        :return: OpenTURNS graph object.
-        :rtype: :class:`openturns.Graph`
+        Parameters
+        ----------
+        drawInliers : bool
+            If True, plots the inlier trajectories.
+        discreteMean : bool
+            If False, the central curve is the curve in the process sample
+            which has highest density.
+            If True, the central curve is the mean of the process sample.
+        bounds : bool
+            If True, plots the bounds of the confidence interval.
+            These bounds are made of the mininimum and maximum at
+            each time.
+
+        Returns
+        -------
+        graph : ot.Graph
+            The plot of outlier trajectories.
         """
         graph = ot.Graph(
-            "Outliers at alpha=%.2f" % (self.densityPlot.outlierAlpha),
+            "Outliers at alpha=%.2f" % (self.hdrAlgorithm.outlierAlpha),
             "",
             "",
             True,
@@ -191,47 +114,55 @@ class ProcessHighDensityRegionAlgorithm:
         t = np.ravel(mesh.getVertices())
 
         # Plot outlier trajectories
-        outlier_samples = np.array(self.getOutlierSamples())
-
-        if outlier_samples.size != 0:
-            for outlier_sample in outlier_samples.T:
-                curve = ot.Curve(t, outlier_sample)
-                curve.setColor(self.outlier_color)
-                graph.add(curve)
+        outlier_indices = self.hdrAlgorithm.computeIndices()
+        outlier_process_sample = ot.ProcessSample(mesh, len(outlier_indices), 1)
+        index = 0
+        for i in outlier_indices:
+            outlier_process_sample[index] = self.processSample[i]
+            index += 1
+        outlier_graph = outlier_process_sample.drawMarginal(0)
+        outlier_graph.setColors([self.outlier_color])
+        graph.add(outlier_graph)
 
         # Plot inlier trajectories
-        inlier_samples = np.array(self.getInlierSamples())
-
+        inlier_indices = self.hdrAlgorithm.computeIndices(False)
+        inlier_process_sample = ot.ProcessSample(mesh, len(inlier_indices), 1)
+        index = 0
+        for i in inlier_indices:
+            inlier_process_sample[index] = self.processSample[i]
+            index += 1
         if drawInliers:
-            for inlier_sample in inlier_samples.T:
-                curve = ot.Curve(t, inlier_sample)
-                curve.setColor(self.inlier_color)
-                graph.add(curve)
+            inlier_graph = inlier_process_sample.drawMarginal(0)
+            inlier_graph.setColors([self.inlier_color])
+            graph.add(inlier_graph)
 
         # Plot inlier bounds
-
-        def fill_between_(lower, upper, legend, color):
+        def fill_between(lower, upper, legend, color):
             """Draw a shaded area between two curves."""
             disc = len(lower)
             poly_data = [
                 [lower[i], lower[i + 1], upper[i + 1], upper[i]]
                 for i in range(disc - 1)
             ]
-
             polygon = [ot.Polygon(poly_data[i], color, color) for i in range(disc - 1)]
             bounds_poly = ot.PolygonArray(polygon)
             bounds_poly.setLegend(legend)
-
             return bounds_poly
 
         if bounds:
-            inlier_min = list(zip(t, np.min(inlier_samples, axis=1)))
-            inlier_max = list(zip(t, np.max(inlier_samples, axis=1)))
+            inlier_min = inlier_process_sample.computeQuantilePerComponent(0.0)
+            inlier_max = inlier_process_sample.computeQuantilePerComponent(1.0)
+            min_values = inlier_min.getValues()
+            max_values = inlier_max.getValues()
+            nbVertices = mesh.getVerticesNumber()
+            lower_bound = [[t[i], min_values[i, 0]] for i in range(nbVertices)]
+            upper_bound = [[t[i], max_values[i, 0]] for i in range(nbVertices)]
 
-            bounds = fill_between_(
-                inlier_min,
-                inlier_max,
-                "Confidence interval at alpha=%.2f" % (self.outlierAlpha),
+            outlierAlpha = np.max(self.alphaLevels)
+            bounds = fill_between(
+                lower_bound,
+                upper_bound,
+                "Confidence interval at alpha=%.2f" % (outlierAlpha),
                 self.confidence_band_color,
             )
             graph.add(bounds)
@@ -240,7 +171,7 @@ class ProcessHighDensityRegionAlgorithm:
         if discreteMean:
             central_field = self.processSample.computeMean()
         else:
-            central_field = self.processSample[self.densityPlot.idx_mode]
+            central_field = self.processSample[self.hdrAlgorithm.idx_mode]
 
         curve = ot.Curve(t[:, None], central_field, "Central curve")
         curve.setColor(self.central_color)
@@ -248,22 +179,14 @@ class ProcessHighDensityRegionAlgorithm:
 
         return graph
 
-    def computeOutlierIndices(self):
-        indices = self.densityPlot.computeOutlierIndices()
+    def computeIndices(self):
+        """
+        Compute the list of outlier curves.
+
+        Returns
+        -------
+        indices : list
+            The list of outlier indices.
+        """
+        indices = self.hdrAlgorithm.computeIndices()
         return indices
-
-    def getInlierSamples(self):
-        indices = self.densityPlot.computeOutlierIndices(False)
-        inlier_samples = np.array(self.sample)[:, indices]
-        return ot.Sample(inlier_samples)
-
-    def getOutlierSamples(self):
-        indices = self.densityPlot.computeOutlierIndices()
-        outlier_samples = np.array(self.sample)[:, indices]
-        return ot.Sample(outlier_samples)
-
-    def getNumberOfTrajectories(self):
-        return self.processSample.getSize()
-
-    def getNumberOfVertices(self):
-        return self.verticesNumber
