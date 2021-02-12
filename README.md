@@ -29,19 +29,6 @@ The output is the following figure:
 
 ![npfda-elnino](doc/images/npfda-elnino-OutlierTrajectoryPlot.png)
 
-With a multivariate sample, the 
-MatrixPlot class allows to plot the 
-scatter plot matrix, with the density on the diagonal.
-
-```	
-mp = MatrixPlot(sample)
-_ = mp.draw()
-```	
-
-The output is the following figure: 
-
-![MatrixPlot-3D](doc/images/MatrixPlot-3D.png)
-
 In the situation where a multivariate sample is given, the 
 HighDensityRegionAlgorithm allows to plot the 
 regions where the density is associated with a 

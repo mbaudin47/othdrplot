@@ -1,7 +1,7 @@
 jupyter
 matplotlib
 numpy
-openturns>=1.14
+openturns>=1.16
 jupyterlab
 nbconvert
 notebook
