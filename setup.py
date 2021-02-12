@@ -20,7 +20,7 @@ with open("README.md", "r") as fh:
 setup(
     name="othdrplot",
     keywords=("graphics"),
-    version="1.0.1",
+    version="1.1",
     packages=find_packages(),
     install_requires=["numpy", "matplotlib", "openturns"],
     description="High Density Region plot",
