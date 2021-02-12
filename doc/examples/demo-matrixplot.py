@@ -10,7 +10,7 @@ import openturns as ot
 from othdrplot import MatrixPlot
 import othdrplot
 
-fname = os.path.join(othdrplot.__path__[0], 'data', 'gauss-mixture.csv')
+fname = os.path.join(othdrplot.__path__[0], "data", "gauss-mixture.csv")
 sample = ot.Sample.ImportFromCSVFile(fname)
 
 mp = MatrixPlot(sample)
@@ -21,7 +21,7 @@ distribution = ks.build(sample)
 mp = MatrixPlot(sample, distribution)
 mp.draw()
 
-fname = os.path.join(othdrplot.__path__[0], 'data', 'gauss-mixture-3D.csv')
+fname = os.path.join(othdrplot.__path__[0], "data", "gauss-mixture-3D.csv")
 sample = ot.Sample.ImportFromCSVFile(fname)
 
 mp = MatrixPlot(sample)

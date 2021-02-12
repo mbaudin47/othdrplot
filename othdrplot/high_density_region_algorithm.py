@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import openturns as ot
 import openturns.viewer as otv
 
+
 class HighDensityRegionAlgorithm:
     """Compute the Highest Density Region."""
 
@@ -45,14 +46,19 @@ class HighDensityRegionAlgorithm:
         # Compute the regular level sets
         self.pvalues = np.zeros(n_contour_lines)
         for i in range(n_contour_lines):
-            levelset, pvalue = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
-                self.contoursAlpha[i])
+            (
+                levelset,
+                pvalue,
+            ) = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
+                self.contoursAlpha[i]
+            )
             self.pvalues[i] = pvalue
             self.levelsets.append(levelset)
 
         # Compute the outlier level set
         levelset, pvalue = self.distribution.computeMinimumVolumeLevelSetWithThreshold(
-            self.outlierAlpha)
+            self.outlierAlpha
+        )
 
         self.outlierPvalue = pvalue
         self.outlier_levelset = levelset
@@ -115,11 +121,11 @@ class HighDensityRegionAlgorithm:
         if inliers:
             idx = self.computeOutlierIndices(False)
             legend = "Inliers at alpha=%.4f" % (self.outlierAlpha)
-            marker_color = 'blue'
+            marker_color = "blue"
         else:
             idx = self.computeOutlierIndices()
             legend = "Outliers at alpha=%.4f" % (self.outlierAlpha)
-            marker_color = 'red'
+            marker_color = "red"
 
         if sample is None:
             sample = np.array(self.sample)
@@ -134,8 +140,9 @@ class HighDensityRegionAlgorithm:
         if sample.shape[1] == 2:
             cloud = ot.Cloud(sample, marker_color, self.data_marker, legend)
         else:
-            cloud = ot.Pairs(sample, '', self.sample.getDescription(),
-                             marker_color, self.data_marker)
+            cloud = ot.Pairs(
+                sample, "", self.sample.getDescription(), marker_color, self.data_marker
+            )
 
         return cloud
 
@@ -183,7 +190,7 @@ class HighDensityRegionAlgorithm:
 
                 if i <= j:  # lower triangle
                     ax = fig.add_subplot(self.dim, self.dim, k)
-                    graph = ot.Graph('', '', '', True, 'topright')
+                    graph = ot.Graph("", "", "", True, "topright")
 
                 if i == j:  # diag
                     pdf_graph = self.distribution.getMarginal(i).drawPDF()
@@ -196,25 +203,32 @@ class HighDensityRegionAlgorithm:
                     X2min = self.sample[:, j].getMin()[0]
                     X2max = self.sample[:, j].getMax()[0]
 
-                    xx = ot.Box([self.numberOfPointsInXAxis],
-                                ot.Interval([X1min], [X1max])).generate()
+                    xx = ot.Box(
+                        [self.numberOfPointsInXAxis], ot.Interval([X1min], [X1max])
+                    ).generate()
 
-                    yy = ot.Box([self.numberOfPointsInXAxis],
-                                ot.Interval([X2min], [X2max])).generate()
+                    yy = ot.Box(
+                        [self.numberOfPointsInXAxis], ot.Interval([X2min], [X2max])
+                    ).generate()
 
-                    xy = ot.Box([self.numberOfPointsInXAxis, self.numberOfPointsInXAxis],
-                                ot.Interval([X1min, X2min], [X1max, X2max])).generate()
+                    xy = ot.Box(
+                        [self.numberOfPointsInXAxis, self.numberOfPointsInXAxis],
+                        ot.Interval([X1min, X2min], [X1max, X2max]),
+                    ).generate()
 
                     data = self.distribution.getMarginal([i, j]).computePDF(xy)
 
                     # Label using percentage instead of probability
                     n_contours = len(self.contoursAlpha)
-                    labels = ["%.0f %%" % (self.contoursAlpha[i] * 100)
-                              for i in range(n_contours)]
+                    labels = [
+                        "%.0f %%" % (self.contoursAlpha[i] * 100)
+                        for i in range(n_contours)
+                    ]
 
-                    contour = ot.Contour(xx, yy, data, self.pvalues,
-                                         ot.Description(labels))
-                    contour.setColor('black')
+                    contour = ot.Contour(
+                        xx, yy, data, self.pvalues, ot.Description(labels)
+                    )
+                    contour.setColor("black")
 
                     graph.add(contour)
 
@@ -243,7 +257,7 @@ class HighDensityRegionAlgorithm:
                 if j == (self.dim - 1):
                     graph.setXTitle(plabels[i])
 
-                graph.setLegends([''])
+                graph.setLegends([""])
                 _ = otv.View(graph, figure=fig, axes=[ax])
 
         return fig

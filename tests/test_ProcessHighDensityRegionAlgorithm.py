@@ -13,22 +13,23 @@ import othdrplot
 
 
 def setup_HDRenv():
-    '''
+    """
     Setup the HDR environnement.
-    '''
+    """
     ot.RandomGenerator.SetSeed(0)
     numberOfPointsForSampling = 500
-    ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling', 'true')
-    ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetSamplingSize',
-                       str(numberOfPointsForSampling))
+    ot.ResourceMap.SetAsBool("Distribution-MinimumVolumeLevelSetBySampling", True)
+    ot.ResourceMap.Set(
+        "Distribution-MinimumVolumeLevelSetSamplingSize", str(numberOfPointsForSampling)
+    )
     return
 
 
 def readProcessSample(fname):
-    '''
+    """
     Return a ProcessSample from a text file.
     Assume the mesh is regular [0,1].
-    '''
+    """
     # Dataset
     data = np.loadtxt(fname)
 
@@ -43,18 +44,17 @@ def readProcessSample(fname):
     dim_fields = 1
     processSample = ot.ProcessSample(mesh, n_fields, dim_fields)
     for i in range(n_fields):
-        trajectory = ot.Sample(data[i, :], 1)
+        trajectory = ot.Sample([[x] for x in data[i, :]])
         processSample[i] = ot.Field(mesh, trajectory)
     return processSample
 
 
 class CheckHDRAlgo(unittest.TestCase):
-
     def test_ProcessHDRAlgorithmDefault(self):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(othdrplot.__path__[0], 'data', 'npfda-elnino.dat')
+        fname = os.path.join(othdrplot.__path__[0], "data", "npfda-elnino.dat")
         processSample = readProcessSample(fname)
 
         # Compute HDRPlot
@@ -71,8 +71,7 @@ class CheckHDRAlgo(unittest.TestCase):
         fig = hdr.drawDensity()
 
         # Plot outlier trajectories
-        graph = hdr.drawOutlierTrajectories(drawInliers=True,
-                                            discreteMean=True)
+        graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
 
         graph = hdr.drawOutlierTrajectories(bounds=False)
 
@@ -90,7 +89,7 @@ class CheckHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(othdrplot.__path__[0], 'data', 'npfda-elnino.dat')
+        fname = os.path.join(othdrplot.__path__[0], "data", "npfda-elnino.dat")
         processSample = readProcessSample(fname)
 
         # Customize the dimension reduction
@@ -100,8 +99,7 @@ class CheckHDRAlgo(unittest.TestCase):
         karhunenLoeveResult = algo.getResult()
 
         # Check higher dimension
-        hdr = ProcessHighDensityRegionAlgorithm(processSample,
-                                                karhunenLoeveResult)
+        hdr = ProcessHighDensityRegionAlgorithm(processSample, karhunenLoeveResult)
         hdr.setOutlierAlpha(0.6)
         hdr.run()
         hdr.summary()
@@ -113,8 +111,7 @@ class CheckHDRAlgo(unittest.TestCase):
         fig = hdr.drawDensity(drawData=True)
 
         # Plot outlier trajectories
-        graph = hdr.drawOutlierTrajectories(drawInliers=True, 
-                                            discreteMean=True)
+        graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
 
         graph = hdr.drawOutlierTrajectories(bounds=False)
         return

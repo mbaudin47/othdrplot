@@ -12,18 +12,17 @@ import othdrplot
 
 
 class CheckHDRAlgo(unittest.TestCase):
-
     def test_HighDensityRegionAlgorithm2D(self):
         ot.RandomGenerator.SetSeed(0)
         numberOfPointsForSampling = 500
-        ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling',
-                           'true')
-        ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetSamplingSize',
-                           str(numberOfPointsForSampling))
+        ot.ResourceMap.SetAsBool("Distribution-MinimumVolumeLevelSetBySampling", True)
+        ot.ResourceMap.Set(
+            "Distribution-MinimumVolumeLevelSetSamplingSize",
+            str(numberOfPointsForSampling),
+        )
 
         # Dataset
-        fname = os.path.join(othdrplot.__path__[0], 'data',
-                             'gauss-mixture.csv')
+        fname = os.path.join(othdrplot.__path__[0], "data", "gauss-mixture.csv")
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         # Creation du kernel smoothing
@@ -34,8 +33,7 @@ class CheckHDRAlgo(unittest.TestCase):
         dp.run()
 
         # Draw contour/inliers/outliers
-        graph = ot.Graph('Test High Density Region plot', '', '', True,
-                         'topright')
+        graph = ot.Graph("Test High Density Region plot", "", "", True, "topright")
 
         fig = dp.drawContour()
 
@@ -49,27 +47,79 @@ class CheckHDRAlgo(unittest.TestCase):
         graph.add(dp.drawOutliers())
 
         outlierIndices = dp.computeOutlierIndices()
-        expected_outlierIndices = [31, 60, 84, 105, 116, 121, 150, 151, 200,
-                                   207, 215, 218, 220, 248, 282, 284, 291,
-                                   359, 361, 378, 382, 404, 412, 418, 425,
-                                   426, 433, 449, 450, 457, 461, 466, 474,
-                                   490, 498, 567, 587, 616, 634, 638, 652,
-                                   665, 687, 714, 729, 730, 748, 751, 794,
-                                   876, 894, 896, 903, 925, 928, 963, 968,
-                                   987]
+        expected_outlierIndices = [
+            31,
+            60,
+            84,
+            105,
+            116,
+            121,
+            150,
+            151,
+            200,
+            207,
+            215,
+            218,
+            220,
+            248,
+            282,
+            284,
+            291,
+            359,
+            361,
+            378,
+            382,
+            404,
+            412,
+            418,
+            425,
+            426,
+            433,
+            449,
+            450,
+            457,
+            461,
+            466,
+            474,
+            490,
+            498,
+            567,
+            587,
+            616,
+            634,
+            638,
+            652,
+            665,
+            687,
+            714,
+            729,
+            730,
+            748,
+            751,
+            794,
+            876,
+            894,
+            896,
+            903,
+            925,
+            928,
+            963,
+            968,
+            987,
+        ]
         assert_equal(outlierIndices, expected_outlierIndices)
 
     def test_HighDensityRegionAlgorithm3D(self):
         ot.RandomGenerator.SetSeed(0)
         numberOfPointsForSampling = 500
-        ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetBySampling',
-                           'true')
-        ot.ResourceMap.Set('Distribution-MinimumVolumeLevelSetSamplingSize',
-                           str(numberOfPointsForSampling))
+        ot.ResourceMap.SetAsBool("Distribution-MinimumVolumeLevelSetBySampling", True)
+        ot.ResourceMap.Set(
+            "Distribution-MinimumVolumeLevelSetSamplingSize",
+            str(numberOfPointsForSampling),
+        )
 
         # Dataset
-        fname = os.path.join(othdrplot.__path__[0], 'data',
-                             'gauss-mixture-3D.csv')
+        fname = os.path.join(othdrplot.__path__[0], "data", "gauss-mixture-3D.csv")
         sample = ot.Sample.ImportFromCSVFile(fname)
 
         # Creation du kernel smoothing
@@ -80,19 +130,52 @@ class CheckHDRAlgo(unittest.TestCase):
         dp.setOutlierAlpha(0.8)
         dp.run()
 
+        def propagate_set_colors(grid, colors):
+            nbRows = grid.getNbRows()
+            nbColumns = grid.getNbColumns()
+            for i in range(nbRows):
+                for j in range(nbColumns):
+                    graph = grid.getGraph(i, j)
+                    graph.setColors(colors)
+                    grid.setGraph(i, j, graph)
+            return grid
+
+        def propagate_add(grid, other_grid):
+            nbRows = grid.getNbRows()
+            nbColumns = grid.getNbColumns()
+            for i in range(nbRows):
+                for j in range(nbColumns):
+                    graph = grid.getGraph(i, j)
+                    other_graph = other_grid.getGraph(i, j)
+                    graph.add(other_graph)
+                    grid.setGraph(i, j, graph)
+            return grid
+
         # Draw contour/inliers/outliers
-        graph = ot.Graph('Test High Density Region plot', '', '', True,
-                         'topright')
         fig = dp.drawContour()
         fig = dp.drawContour(drawData=True)
         fig = dp.drawContour(drawOutliers=False)
-        graph.add(dp.drawInliers())
+        #
+        inliers_grid = dp.drawInliers()
+        grid_outliers = dp.drawOutliers()
+        grid_outliers = propagate_set_colors(grid_outliers, ["red"])
+        inliers_grid = propagate_add(inliers_grid, grid_outliers)
 
-        # Plot data
-        graph.add(dp.drawOutliers())
         outlierIndices = dp.computeOutlierIndices()
-        expected_outlierIndices = [75, 79, 145, 148, 189, 246, 299, 314, 340,
-                                   351, 386, 471]
+        expected_outlierIndices = [
+            75,
+            79,
+            145,
+            148,
+            189,
+            246,
+            299,
+            314,
+            340,
+            351,
+            386,
+            471,
+        ]
         assert_equal(outlierIndices, expected_outlierIndices)
 
 

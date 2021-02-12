@@ -7,6 +7,7 @@ import openturns as ot
 import matplotlib.pyplot as plt
 import openturns.viewer as otv
 
+
 class MatrixPlot:
     """MatrixPlot."""
 
@@ -24,14 +25,14 @@ class MatrixPlot:
         self.size = sample.getSize()
         self.labels = sample.getDescription()
 
-    def draw(self, figsize = (10, 10)):
+    def draw(self, figsize=(10, 10)):
         """
 
         :returns: figure, axes and OpenTURNS Graph object.
         :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
           :class:`openturns.Graph`
         """
-        fig = plt.figure(figsize = figsize)
+        fig = plt.figure(figsize=figsize)
         # Axis are created and stored top to bottom, left to right
         for i in range(self.dim):
             for j in range(self.dim):
@@ -39,18 +40,18 @@ class MatrixPlot:
 
                 if i <= j:  # lower triangle
                     ax = fig.add_subplot(self.dim, self.dim, k)
-                    graph = ot.Graph('', '', '', True, 'topright')
+                    graph = ot.Graph("", "", "", True, "topright")
 
                 if i == j:  # diag
-                    if (self.distribution is None):
+                    if self.distribution is None:
                         factory = ot.KernelSmoothing()
                         distribution = factory.build(self.sample[:, i])
                         estimatedDistribution_graph = distribution.drawPDF()
-                        estimatedDistribution_graph.setLegends([''])
+                        estimatedDistribution_graph.setLegends([""])
                         graph.add(estimatedDistribution_graph)
                     else:
                         pdf_graph = self.distribution.getMarginal(i).drawPDF()
-                        pdf_graph.setLegends([''])
+                        pdf_graph.setLegends([""])
                         graph.add(pdf_graph)
 
                 elif i < j:  # lower corners
@@ -62,7 +63,7 @@ class MatrixPlot:
                 if j == (self.dim - 1):
                     graph.setXTitle(self.labels[i])
 
-                graph.setLegends([''])
+                graph.setLegends([""])
                 _ = otv.View(graph, figure=fig, axes=[ax])
 
-        return fig    
+        return fig
