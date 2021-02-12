@@ -9,10 +9,12 @@ import openturns as ot
 from othdrplot import HighDensityRegionAlgorithm
 import unittest
 import othdrplot
+import openturns.viewer as otv
 
 
 class CheckHDRAlgo(unittest.TestCase):
     def test_HighDensityRegionAlgorithm2D(self):
+        # With 2D
         ot.RandomGenerator.SetSeed(0)
         numberOfPointsForSampling = 500
         ot.ResourceMap.SetAsBool("Distribution-MinimumVolumeLevelSetBySampling", True)
@@ -33,18 +35,11 @@ class CheckHDRAlgo(unittest.TestCase):
         dp.run()
 
         # Draw contour/inliers/outliers
-        graph = ot.Graph("Test High Density Region plot", "", "", True, "topright")
+        otv.View(dp.draw())
 
-        fig = dp.drawContour()
+        otv.View(dp.draw(drawInliers=True))
 
-        fig = dp.drawContour(drawData=True)
-
-        fig = dp.drawContour(drawOutliers=False)
-
-        graph.add(dp.drawInliers())
-
-        # Plot data
-        graph.add(dp.drawOutliers())
+        otv.View(dp.draw(drawOutliers=False))
 
         outlierIndices = dp.computeOutlierIndices()
         expected_outlierIndices = [
@@ -110,6 +105,7 @@ class CheckHDRAlgo(unittest.TestCase):
         assert_equal(outlierIndices, expected_outlierIndices)
 
     def test_HighDensityRegionAlgorithm3D(self):
+        # With 3D
         ot.RandomGenerator.SetSeed(0)
         numberOfPointsForSampling = 500
         ot.ResourceMap.SetAsBool("Distribution-MinimumVolumeLevelSetBySampling", True)
@@ -130,36 +126,10 @@ class CheckHDRAlgo(unittest.TestCase):
         dp.setOutlierAlpha(0.8)
         dp.run()
 
-        def propagate_set_colors(grid, colors):
-            nbRows = grid.getNbRows()
-            nbColumns = grid.getNbColumns()
-            for i in range(nbRows):
-                for j in range(nbColumns):
-                    graph = grid.getGraph(i, j)
-                    graph.setColors(colors)
-                    grid.setGraph(i, j, graph)
-            return grid
-
-        def propagate_add(grid, other_grid):
-            nbRows = grid.getNbRows()
-            nbColumns = grid.getNbColumns()
-            for i in range(nbRows):
-                for j in range(nbColumns):
-                    graph = grid.getGraph(i, j)
-                    other_graph = other_grid.getGraph(i, j)
-                    graph.add(other_graph)
-                    grid.setGraph(i, j, graph)
-            return grid
-
         # Draw contour/inliers/outliers
-        fig = dp.drawContour()
-        fig = dp.drawContour(drawData=True)
-        fig = dp.drawContour(drawOutliers=False)
-        #
-        inliers_grid = dp.drawInliers()
-        grid_outliers = dp.drawOutliers()
-        grid_outliers = propagate_set_colors(grid_outliers, ["red"])
-        inliers_grid = propagate_add(inliers_grid, grid_outliers)
+        otv.View(dp.draw())
+        otv.View(dp.draw(drawInliers=True))
+        otv.View(dp.draw(drawOutliers=False))
 
         outlierIndices = dp.computeOutlierIndices()
         expected_outlierIndices = [
@@ -176,6 +146,38 @@ class CheckHDRAlgo(unittest.TestCase):
             386,
             471,
         ]
+        assert_equal(outlierIndices, expected_outlierIndices)
+
+    def test_HighDensityRegionAlgorithm1D(self):
+        # With 1D
+        ot.RandomGenerator.SetSeed(0)
+        numberOfPointsForSampling = 500
+        ot.ResourceMap.SetAsBool("Distribution-MinimumVolumeLevelSetBySampling", True)
+        ot.ResourceMap.Set(
+            "Distribution-MinimumVolumeLevelSetSamplingSize",
+            str(numberOfPointsForSampling),
+        )
+
+        # Dataset
+        ot.RandomGenerator_SetSeed(1976)
+        sample = ot.Normal().getSample(100)
+
+        # Creation du kernel smoothing
+        ks = ot.KernelSmoothing()
+        sample_distribution = ks.build(sample)
+
+        dp = HighDensityRegionAlgorithm(sample, sample_distribution)
+        dp.run()
+
+        # Draw contour/inliers/outliers
+        otv.View(dp.draw())
+
+        otv.View(dp.draw(drawInliers=True))
+
+        otv.View(dp.draw(drawOutliers=False))
+
+        outlierIndices = dp.computeOutlierIndices()
+        expected_outlierIndices = [16, 24, 33, 49, 71, 84]
         assert_equal(outlierIndices, expected_outlierIndices)
 
 

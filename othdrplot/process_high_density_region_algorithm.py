@@ -54,6 +54,18 @@ class ProcessHighDensityRegionAlgorithm:
         self.outlierAlpha = 0.9  # The probability for outlier detection
         self.threshold = 0.1
 
+        # Graphical style
+        self.outlier_color = "firebrick3"
+        self.inlier_color = "forestgreen"
+        self.central_color = "black"
+        self.default_confidence_band_color = "dodgerblue3"
+        self.default_confidence_band_alpha = 128
+        color_hex = ot.Drawable.ConvertFromName(self.default_confidence_band_color)
+        r, g, b, a = ot.Drawable.ConvertToRGBA(color_hex)
+        self.confidence_band_color = ot.Drawable.ConvertFromRGBA(
+            r, g, b, self.default_confidence_band_alpha
+        )
+
     def setContoursAlpha(self, contoursAlpha):
         self.contoursAlpha = contoursAlpha
 
@@ -119,12 +131,28 @@ class ProcessHighDensityRegionAlgorithm:
         :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
           :class:`openturns.Graph`
         """
-        mp = MatrixPlot(self.principalComponents)
-        fig = mp.draw()
+        dimension = self.principalComponents.getDimension()
+        distribution = ot.ComposedDistribution(
+            [
+                ot.KernelSmoothing().build(self.principalComponents.getMarginal(i))
+                for i in range(dimension)
+            ]
+        )
+        if dimension == 1:
+            graph = distribution.drawPDF()
+            # Add points on X axis
+            sample_size = self.principalComponents.getSize()
+            data = ot.Sample(sample_size, 2)
+            data[:, 0] = self.principalComponents
+            cloud = ot.Cloud(data)
+            graph.add(cloud)
+        else:
+            graph = ot.VisualTest_DrawPairsMarginals(
+                self.principalComponents, distribution
+            )
+        return graph
 
-        return fig
-
-    def drawDensity(self, drawData=False, drawOutliers=True):
+    def drawDensity(self, drawInliers=False, drawOutliers=True):
         """Draw contour.
 
         If :attr:`drawData`, the whole sample is drawn. Otherwise, depending on
@@ -137,9 +165,7 @@ class ProcessHighDensityRegionAlgorithm:
         :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
           :class:`openturns.Graph`
         """
-        return self.densityPlot.drawContour(
-            drawData=drawData, drawOutliers=drawOutliers
-        )
+        return self.densityPlot.draw(drawInliers=drawInliers, drawOutliers=drawOutliers)
 
     def drawOutlierTrajectories(
         self, drawInliers=False, discreteMean=False, bounds=True
@@ -171,7 +197,7 @@ class ProcessHighDensityRegionAlgorithm:
         if outlier_samples.size != 0:
             for outlier_sample in outlier_samples.T:
                 curve = ot.Curve(t, outlier_sample)
-                curve.setColor("red")
+                curve.setColor(self.outlier_color)
                 graph.add(curve)
 
         # Plot inlier trajectories
@@ -180,23 +206,20 @@ class ProcessHighDensityRegionAlgorithm:
         if drawInliers:
             for inlier_sample in inlier_samples.T:
                 curve = ot.Curve(t, inlier_sample)
-                curve.setColor("blue")
+                curve.setColor(self.inlier_color)
                 graph.add(curve)
 
         # Plot inlier bounds
 
-        def fill_between_(lower, upper, legend):
+        def fill_between_(lower, upper, legend, color):
             """Draw a shaded area between two curves."""
             disc = len(lower)
-            palette = ot.Drawable.BuildDefaultPalette(2)[1]
             poly_data = [
                 [lower[i], lower[i + 1], upper[i + 1], upper[i]]
                 for i in range(disc - 1)
             ]
 
-            polygon = [
-                ot.Polygon(poly_data[i], palette, palette) for i in range(disc - 1)
-            ]
+            polygon = [ot.Polygon(poly_data[i], color, color) for i in range(disc - 1)]
             bounds_poly = ot.PolygonArray(polygon)
             bounds_poly.setLegend(legend)
 
@@ -210,6 +233,7 @@ class ProcessHighDensityRegionAlgorithm:
                 inlier_min,
                 inlier_max,
                 "Confidence interval at alpha=%.2f" % (self.outlierAlpha),
+                self.confidence_band_color,
             )
             graph.add(bounds)
 
@@ -220,7 +244,7 @@ class ProcessHighDensityRegionAlgorithm:
             central_field = self.processSample[self.densityPlot.idx_mode]
 
         curve = ot.Curve(t[:, None], central_field, "Central curve")
-        curve.setColor("black")
+        curve.setColor(self.central_color)
         graph.add(curve)
 
         return graph

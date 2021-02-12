@@ -28,7 +28,11 @@ class HighDensityRegionAlgorithm:
         self.contoursAlpha = [0.9, 0.5, 0.1]
         self.outlierAlpha = 0.9  # The probability for outlier detection
 
+        # Graphical style
         self.data_marker = "fsquare"  # The marker for data
+        self.contour_color = "black"
+        self.outlier_color = "firebrick3"
+        self.inlier_color = "forestgreen"
 
         self.sample = sample
         self.distribution = distribution
@@ -82,8 +86,9 @@ class HighDensityRegionAlgorithm:
             sample_idx = np.where(np.array(flag) == 0)[0]
         else:
             sample_idx = np.where(np.array(flag) != 0)[0]
+        indices = [int(i) for i in sample_idx]
 
-        return list(sample_idx)
+        return indices
 
     def setnumberOfPointsInXAxis(self, numberOfPointsInXAxis):
         self.numberOfPointsInXAxis = numberOfPointsInXAxis
@@ -109,7 +114,7 @@ class HighDensityRegionAlgorithm:
     def getOutlierAlpha(self):
         return self.outlierAlpha
 
-    def _inliers_outliers(self, sample=None, inliers=True):
+    def _inliers_outliers(self, sample, inliers=True):
         """Inliers or outliers cloud drawing.
 
         :param sample: Sample of size (n_samples, n_dims).
@@ -118,35 +123,25 @@ class HighDensityRegionAlgorithm:
         :return: OpenTURNS Cloud or Pair object if :attr:`dim` > 2.
         :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
+        # Perform selection
         if inliers:
             idx = self.computeOutlierIndices(False)
             legend = "Inliers at alpha=%.4f" % (self.outlierAlpha)
-            marker_color = "blue"
+            marker_color = self.inlier_color
         else:
             idx = self.computeOutlierIndices()
             legend = "Outliers at alpha=%.4f" % (self.outlierAlpha)
-            marker_color = "red"
+            marker_color = self.outlier_color
 
-        if sample is None:
-            sample = np.array(self.sample)
-        else:
-            sample = np.asarray(sample)
+        sample_selection = sample[idx, :]
 
-        sample = sample[idx, :]
-
-        if sample.size == 0:
+        if sample_selection.getSize() == 0:
             return
 
-        if sample.shape[1] == 2:
-            cloud = ot.Cloud(sample, marker_color, self.data_marker, legend)
-        else:
-            cloud = ot.Pairs(
-                sample, "", self.sample.getDescription(), marker_color, self.data_marker
-            )
-
+        cloud = ot.Cloud(sample_selection, marker_color, self.data_marker, legend)
         return cloud
 
-    def drawInliers(self, sample=None):
+    def _drawInliers(self, sample):
         """Draw inliers.
 
         :param sample: Sample of size (n_samples, n_dims).
@@ -154,9 +149,9 @@ class HighDensityRegionAlgorithm:
         :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
         :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
-        return self._inliers_outliers(sample=sample, inliers=True)
+        return self._inliers_outliers(sample, inliers=True)
 
-    def drawOutliers(self, sample=None):
+    def _drawOutliers(self, sample):
         """Draw outliers.
 
         :param sample: Sample of size (n_samples, n_dims).
@@ -164,17 +159,17 @@ class HighDensityRegionAlgorithm:
         :return: OpenTURNS Cloud or Pair object if :attr:`self.dim` > 2.
         :rtype: :class:`openturns.Cloud` or :class:`openturns.Pairs`
         """
-        return self._inliers_outliers(sample=sample, inliers=False)
+        return self._inliers_outliers(sample, inliers=False)
 
-    def drawContour(self, drawData=False, drawOutliers=True):
+    def draw(self, drawInliers=False, drawOutliers=True):
         """Draw contour.
 
         If :attr:`drawData`, the whole sample is drawn. Otherwise, depending on
         :attr:`drawOutliers` it will either show the outliers or the inliers
         only.
 
-        :param bool drawData: Plot inliers and outliers.
-        :param bool drawOutliers: Whether to draw inliers or outliers.
+        :param bool drawInliers: If True, plot inliers.
+        :param bool drawOutliers: If True, plot outliers.
         :returns: figure, axes and OpenTURNS Graph object.
         :rtypes: Matplotlib figure instances, Matplotlib AxesSubplot instances,
           :class:`openturns.Graph`
@@ -182,21 +177,18 @@ class HighDensityRegionAlgorithm:
         plabels = self.sample.getDescription()
 
         # Bivariate space
-        fig = plt.figure(figsize=(10, 10))
+        grid = ot.GridLayout(self.dim, self.dim)
         # Axis are created and stored top to bottom, left to right
         for i in range(self.dim):
             for j in range(self.dim):
-                k = i + j * self.dim + 1
-
-                if i <= j:  # lower triangle
-                    ax = fig.add_subplot(self.dim, self.dim, k)
+                if i >= j:  # lower triangle
                     graph = ot.Graph("", "", "", True, "topright")
 
                 if i == j:  # diag
                     pdf_graph = self.distribution.getMarginal(i).drawPDF()
                     graph.add(pdf_graph)
 
-                elif i < j:  # lower corners
+                elif i > j:  # lower corners
                     # Use a regular grid to compute probability response surface
                     X1min = self.sample[:, i].getMin()[0]
                     X1max = self.sample[:, i].getMax()[0]
@@ -228,36 +220,30 @@ class HighDensityRegionAlgorithm:
                     contour = ot.Contour(
                         xx, yy, data, self.pvalues, ot.Description(labels)
                     )
-                    contour.setColor("black")
+                    contour.setColor(self.contour_color)
 
                     graph.add(contour)
 
-                    sample_ = np.array(self.sample)[:, [i, j]]
+                    sample_ij = self.sample[:, [i, j]]
 
-                    if drawData:
-                        inliers_ = self.drawInliers(sample=sample_)
-                        outliers_ = self.drawOutliers(sample=sample_)
+                    if drawInliers:
+                        cloud = self._drawInliers(sample_ij)
 
-                        if inliers_ is not None:
-                            graph.add(inliers_)
-                        if outliers_ is not None:
-                            graph.add(outliers_)
+                        if cloud is not None:
+                            graph.add(cloud)
 
-                    elif drawOutliers:
-                        outliers_ = self.drawOutliers(sample=sample_)
-                        if outliers_ is not None:
-                            graph.add(outliers_)
-                    else:
-                        inliers_ = self.drawInliers(sample=sample_)
-                        if inliers_ is not None:
-                            graph.add(inliers_)
+                    if drawOutliers:
+                        cloud = self._drawOutliers(sample_ij)
+                        if cloud is not None:
+                            graph.add(cloud)
 
-                if i == 0:
+                if j == 0 and i > 0:
                     graph.setYTitle(plabels[j])
-                if j == (self.dim - 1):
+                if i == (self.dim - 1):
                     graph.setXTitle(plabels[i])
 
-                graph.setLegends([""])
-                _ = otv.View(graph, figure=fig, axes=[ax])
+                if i >= j:  # lower triangle
+                    graph.setLegends([""])
+                    grid.setGraph(i, j, graph)
 
-        return fig
+        return grid

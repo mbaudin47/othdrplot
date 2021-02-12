@@ -10,6 +10,7 @@ from numpy.testing import assert_equal
 import openturns as ot
 from othdrplot import ProcessHighDensityRegionAlgorithm
 import othdrplot
+import openturns.viewer as otv
 
 
 def setup_HDRenv():
@@ -51,6 +52,7 @@ def readProcessSample(fname):
 
 class CheckHDRAlgo(unittest.TestCase):
     def test_ProcessHDRAlgorithmDefault(self):
+        # With 2 principal components
         setup_HDRenv()
 
         # Dataset
@@ -65,15 +67,19 @@ class CheckHDRAlgo(unittest.TestCase):
         hdr.summary()
 
         # Plot ACP
-        fig = hdr.drawDimensionReduction()
+        grid = hdr.drawDimensionReduction()
+        otv.View(grid)
 
         # Plot Density
-        fig = hdr.drawDensity()
+        grid = hdr.drawDensity()
+        otv.View(grid)
 
         # Plot outlier trajectories
         graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
+        otv.View(graph)
 
         graph = hdr.drawOutlierTrajectories(bounds=False)
+        otv.View(graph)
 
         outlier_indices = hdr.computeOutlierIndices()
         expected_outlier_indices = [3, 7, 22, 32, 33, 41, 47]
@@ -86,6 +92,7 @@ class CheckHDRAlgo(unittest.TestCase):
         return
 
     def test_ProcessHDRAlgorithmThreshold(self):
+        # With 3 principal components
         setup_HDRenv()
 
         # Dataset
@@ -106,14 +113,63 @@ class CheckHDRAlgo(unittest.TestCase):
 
         assert_equal(hdr.numberOfComponents, 3)
 
-        fig = hdr.drawDensity()
+        grid = hdr.drawDensity()
+        otv.View(grid)
 
-        fig = hdr.drawDensity(drawData=True)
+        grid = hdr.drawDensity(drawInliers=True)
+        otv.View(grid)
 
         # Plot outlier trajectories
         graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
+        otv.View(graph)
 
         graph = hdr.drawOutlierTrajectories(bounds=False)
+        otv.View(graph)
+
+        # Plot principal components
+        grid = hdr.drawDimensionReduction()
+        otv.View(grid)
+        return
+
+    def test_ProcessHDRAlgorithmPC1(self):
+        # With 1 principal component
+        setup_HDRenv()
+
+        # Dataset
+        fname = os.path.join(othdrplot.__path__[0], "data", "npfda-elnino.dat")
+        processSample = readProcessSample(fname)
+
+        # Customize the dimension reduction
+        threshold = 0.5
+        algo = ot.KarhunenLoeveSVDAlgorithm(processSample, threshold)
+        algo.setNbModes(1)
+        algo.run()
+        karhunenLoeveResult = algo.getResult()
+
+        # Check higher dimension
+        hdr = ProcessHighDensityRegionAlgorithm(processSample, karhunenLoeveResult)
+        hdr.setOutlierAlpha(0.6)
+        hdr.run()
+        hdr.summary()
+
+        assert_equal(hdr.numberOfComponents, 1)
+
+        grid = hdr.drawDensity()
+        otv.View(grid)
+
+        grid = hdr.drawDensity(drawInliers=True)
+        otv.View(grid)
+
+        # Plot outlier trajectories
+        graph = hdr.drawOutlierTrajectories(drawInliers=True, discreteMean=True)
+        otv.View(graph)
+
+        graph = hdr.drawOutlierTrajectories(bounds=False)
+        otv.View(graph)
+
+        # Plot principal components
+        grid = hdr.drawDimensionReduction()
+        otv.View(grid)
         return
 
 
