@@ -6,7 +6,6 @@ Component to create ProcessHighDensityRegionAlgorithm.
 import numpy as np
 import openturns as ot
 from .high_density_region_algorithm import HighDensityRegionAlgorithm
-from .matrix_plot import MatrixPlot
 
 
 class ProcessHighDensityRegionAlgorithm:
@@ -58,8 +57,8 @@ class ProcessHighDensityRegionAlgorithm:
         self.outlier_color = "firebrick3"
         self.inlier_color = "forestgreen"
         self.central_color = "black"
-        self.default_confidence_band_color = "dodgerblue3"
-        self.default_confidence_band_alpha = 128
+        self.default_confidence_band_color = "#87cefa"
+        self.default_confidence_band_alpha = 255
         color_hex = ot.Drawable.ConvertFromName(self.default_confidence_band_color)
         r, g, b, a = ot.Drawable.ConvertToRGBA(color_hex)
         self.confidence_band_color = ot.Drawable.ConvertFromRGBA(
