@@ -8,7 +8,7 @@ import openturns as ot
 from .high_density_region_algorithm import HighDensityRegionAlgorithm
 
 
-class ProcessHighDensityRegionAlgorithm:
+class ProcessHighDensityRegionAlgorithm(HighDensityRegionAlgorithm):
     """ProcessHighDensityRegionAlgorithm."""
 
     def __init__(
@@ -47,38 +47,21 @@ class ProcessHighDensityRegionAlgorithm:
                 "current dimension is %d." % (dim)
             )
         self.processSample = processSample
-        self.reducedDistribution = reducedDistribution
-        self.reducedComponents = reducedComponents
-
-        self.hdrAlgorithm = None
-
-        # The list of probabilities to create the contour
-        self.alphaLevels = alphaLevels
 
         # Graphical style
-        self.outlier_color = "firebrick3"
-        self.inlier_color = "forestgreen"
         self.central_color = "black"
         self.default_confidence_band_color = "#87cefa"
+        # TODO : setting alpha color to 125 produces vertical bands: why?
         self.default_confidence_band_alpha = 255
         color_hex = ot.Drawable.ConvertFromName(self.default_confidence_band_color)
         r, g, b, a = ot.Drawable.ConvertToRGBA(color_hex)
         self.confidence_band_color = ot.Drawable.ConvertFromRGBA(
             r, g, b, self.default_confidence_band_alpha
         )
-
-    def run(self):
-        """
-        Run high density region algorithm.
-        """
-        # Create hdrAlgorithm
-        self.hdrAlgorithm = HighDensityRegionAlgorithm(
-            self.reducedComponents, self.reducedDistribution, self.alphaLevels
-        )
-        self.hdrAlgorithm.run()
+        super(ProcessHighDensityRegionAlgorithm, self).__init__(reducedComponents, reducedDistribution, alphaLevels)
 
     def draw(
-        self, drawInliers=False, discreteMean=False, bounds=True
+        self, drawInliers=False, drawOutliers=True, discreteMean=False, bounds=True
     ):
         """
         Plot outlier trajectories based on HDR.
@@ -86,7 +69,9 @@ class ProcessHighDensityRegionAlgorithm:
         Parameters
         ----------
         drawInliers : bool
-            If True, plots the inlier trajectories.
+            If True, plots the inlier curves.
+        drawOutliers : bool
+            If True, draw the outliers curves.
         discreteMean : bool
             If False, the central curve is the curve in the process sample
             which has highest density.
@@ -101,8 +86,9 @@ class ProcessHighDensityRegionAlgorithm:
         graph : ot.Graph
             The plot of outlier trajectories.
         """
+        outlierAlpha = self.getOutlierAlpha()
         graph = ot.Graph(
-            "Outliers at alpha=%.2f" % (self.hdrAlgorithm.outlierAlpha),
+            r"Outliers at $\alpha$=%.2f" % (outlierAlpha),
             "",
             "",
             True,
@@ -114,18 +100,19 @@ class ProcessHighDensityRegionAlgorithm:
         t = np.ravel(mesh.getVertices())
 
         # Plot outlier trajectories
-        outlier_indices = self.hdrAlgorithm.computeIndices()
+        outlier_indices = self.computeIndices()
         outlier_process_sample = ot.ProcessSample(mesh, len(outlier_indices), 1)
         index = 0
         for i in outlier_indices:
             outlier_process_sample[index] = self.processSample[i]
             index += 1
-        outlier_graph = outlier_process_sample.drawMarginal(0)
-        outlier_graph.setColors([self.outlier_color])
-        graph.add(outlier_graph)
+        if drawOutliers:
+            outlier_graph = outlier_process_sample.drawMarginal(0)
+            outlier_graph.setColors([self.outlier_color])
+            graph.add(outlier_graph)
 
         # Plot inlier trajectories
-        inlier_indices = self.hdrAlgorithm.computeIndices(False)
+        inlier_indices = self.computeIndices(False)
         inlier_process_sample = ot.ProcessSample(mesh, len(inlier_indices), 1)
         index = 0
         for i in inlier_indices:
@@ -162,7 +149,7 @@ class ProcessHighDensityRegionAlgorithm:
             bounds = fill_between(
                 lower_bound,
                 upper_bound,
-                "Confidence interval at alpha=%.2f" % (outlierAlpha),
+                r"Conf. interval at $\alpha$=%.2f" % (outlierAlpha),
                 self.confidence_band_color,
             )
             graph.add(bounds)
@@ -171,22 +158,11 @@ class ProcessHighDensityRegionAlgorithm:
         if discreteMean:
             central_field = self.processSample.computeMean()
         else:
-            central_field = self.processSample[self.hdrAlgorithm.idx_mode]
+            mode_index = self.getMode()
+            central_field = self.processSample[mode_index]
 
         curve = ot.Curve(t[:, None], central_field, "Central curve")
         curve.setColor(self.central_color)
         graph.add(curve)
 
         return graph
-
-    def computeIndices(self):
-        """
-        Compute the list of outlier curves.
-
-        Returns
-        -------
-        indices : list
-            The list of outlier indices.
-        """
-        indices = self.hdrAlgorithm.computeIndices()
-        return indices

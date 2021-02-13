@@ -76,13 +76,23 @@ class CheckProcessHDRAlgo(unittest.TestCase):
         # Plot outlier trajectories
         graph = hdr.draw(drawInliers=True, discreteMean=True)
         otv.View(graph)
-
+        #
+        for discreteMean in [True, False]:
+            graph = hdr.draw(discreteMean=discreteMean)
+            otv.View(graph)
+        # Do not plot outlier trajectories
+        graph = hdr.draw(drawOutliers=False, discreteMean=True)
+        otv.View(graph)
+        #
         graph = hdr.draw(bounds=False)
         otv.View(graph)
-
+        #
         outlier_indices = hdr.computeIndices()
         expected_outlier_indices = [3, 7, 22, 32, 33, 41, 47]
         assert_equal(outlier_indices, expected_outlier_indices)
+        #
+        inlier_indices = hdr.computeIndices(False)
+        assert_equal(len(inlier_indices), 47)
         return
 
     def test_ProcessHDRAlgorithmThreshold(self):

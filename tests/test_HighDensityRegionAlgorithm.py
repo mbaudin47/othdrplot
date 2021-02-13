@@ -103,6 +103,9 @@ class CheckHDRAlgo(unittest.TestCase):
             987,
         ]
         assert_equal(outlierIndices, expected_outlierIndices)
+        # Mode
+        mode_index = dp.getMode()
+        assert_equal(mode_index, 424)
 
     def test_HighDensityRegionAlgorithm3D(self):
         # With 3D

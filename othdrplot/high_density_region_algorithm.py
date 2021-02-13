@@ -86,6 +86,19 @@ class HighDensityRegionAlgorithm:
         pdf = np.array(self.distribution.computePDF(self.sample))
         self.idx_mode = int(np.argmax(pdf))
 
+    def getMode(self):
+        """
+        Return indice of point with highest density.
+
+        The mode is the point of the sample which has highest PDF. 
+
+        Returns
+        -------
+        index : index
+            The indice of the mode in the sample.
+        """
+        return self.idx_mode
+
     def computeIndices(self, outlierFlag=True):
         """
         Get inlier or outlier indices.
@@ -245,3 +258,15 @@ class HighDensityRegionAlgorithm:
                     grid.setGraph(i, j, graph)
 
         return grid
+    
+    def getOutlierAlpha(self):
+        """
+        Return alpha level of outliers. 
+
+        Returns
+        -------
+        outlierAlpha : float
+            The alpha level of outliers.
+        """
+        return self.outlierAlpha
+

@@ -3,10 +3,7 @@
 """
 Test for DrawUnivariateSampleDistribution class.
 """
-import os
-import numpy as np
 import unittest
-from numpy.testing import assert_equal
 import openturns as ot
 import othdrplot as othdr
 import openturns.viewer as otv
