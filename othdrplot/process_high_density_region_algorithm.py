@@ -101,27 +101,29 @@ class ProcessHighDensityRegionAlgorithm(HighDensityRegionAlgorithm):
 
         # Plot outlier trajectories
         outlier_indices = self.computeIndices()
-        outlier_process_sample = ot.ProcessSample(mesh, len(outlier_indices), 1)
-        index = 0
-        for i in outlier_indices:
-            outlier_process_sample[index] = self.processSample[i]
-            index += 1
-        if drawOutliers:
-            outlier_graph = outlier_process_sample.drawMarginal(0)
-            outlier_graph.setColors([self.outlier_color])
-            graph.add(outlier_graph)
+        if len(outlier_indices) > 0:
+            outlier_process_sample = ot.ProcessSample(mesh, len(outlier_indices), 1)
+            index = 0
+            for i in outlier_indices:
+                outlier_process_sample[index] = self.processSample[i]
+                index += 1
+            if drawOutliers:
+                outlier_graph = outlier_process_sample.drawMarginal(0)
+                outlier_graph.setColors([self.outlier_color])
+                graph.add(outlier_graph)
 
         # Plot inlier trajectories
         inlier_indices = self.computeIndices(False)
-        inlier_process_sample = ot.ProcessSample(mesh, len(inlier_indices), 1)
-        index = 0
-        for i in inlier_indices:
-            inlier_process_sample[index] = self.processSample[i]
-            index += 1
-        if drawInliers:
-            inlier_graph = inlier_process_sample.drawMarginal(0)
-            inlier_graph.setColors([self.inlier_color])
-            graph.add(inlier_graph)
+        if len(inlier_indices):
+            inlier_process_sample = ot.ProcessSample(mesh, len(inlier_indices), 1)
+            index = 0
+            for i in inlier_indices:
+                inlier_process_sample[index] = self.processSample[i]
+                index += 1
+            if drawInliers:
+                inlier_graph = inlier_process_sample.drawMarginal(0)
+                inlier_graph.setColors([self.inlier_color])
+                graph.add(inlier_graph)
 
         # Plot inlier bounds
         def fill_between(lower, upper, legend, color):

@@ -5,6 +5,7 @@ Component to create HighDensityRegionAlgorithm.
 """
 import numpy as np
 import openturns as ot
+from .draw_univariate_sample import DrawUnivariateSampleDistribution
 
 
 class HighDensityRegionAlgorithm:
@@ -85,6 +86,15 @@ class HighDensityRegionAlgorithm:
         # Compute the modal level set
         pdf = np.array(self.distribution.computePDF(self.sample))
         self.idx_mode = int(np.argmax(pdf))
+        
+        # Compute inliers and outliers indices
+        flag = self.outlier_levelset.contains(self.sample)
+        # Compute outliers
+        sample_idx = np.where(np.array(flag) == 0)[0]
+        self.outlier_indices = [int(i) for i in sample_idx]
+        # Compute inliers
+        sample_idx = np.where(np.array(flag) != 0)[0]
+        self.inlier_indices = [int(i) for i in sample_idx]
 
     def getMode(self):
         """
@@ -122,16 +132,12 @@ class HighDensityRegionAlgorithm:
         indices : list(int)
             The indices of selected points in the sample.
         """
-        flag = self.outlier_levelset.contains(self.sample)
-
         if outlierFlag:
             # Compute outliers
-            sample_idx = np.where(np.array(flag) == 0)[0]
+            indices = self.outlier_indices
         else:
             # Compute inliers
-            sample_idx = np.where(np.array(flag) != 0)[0]
-        indices = [int(i) for i in sample_idx]
-
+            indices = self.inlier_indices
         return indices
 
     def setnumberOfPointsInXAxis(self, numberOfPointsInXAxis):
@@ -150,11 +156,11 @@ class HighDensityRegionAlgorithm:
         """Inliers or outliers cloud drawing."""
         # Perform selection
         if inliers:
-            idx = self.computeIndices(False)
+            idx = self.inlier_indices
             legend = "Inliers at alpha=%.4f" % (self.outlierAlpha)
             marker_color = self.inlier_color
         else:
-            idx = self.computeIndices()
+            idx = self.outlier_indices
             legend = "Outliers at alpha=%.4f" % (self.outlierAlpha)
             marker_color = self.outlier_color
 
@@ -196,8 +202,23 @@ class HighDensityRegionAlgorithm:
                     graph = ot.Graph("", "", "", True, "topright")
 
                 if i == j:  # diag
-                    pdf_graph = self.distribution.getMarginal(i).drawPDF()
-                    graph.add(pdf_graph)
+                    marginal_distribution = self.distribution.getMarginal(i)
+                    curve = marginal_distribution.drawPDF()
+                    graph.add(curve)
+                    if drawInliers:
+                        marginal_sample = self.sample[self.inlier_indices, i]
+                        data = ot.Sample(marginal_sample.getSize(), 2)
+                        data[:, 0] = marginal_sample
+                        cloud = ot.Cloud(data)
+                        cloud.setColor(self.inlier_color)
+                        graph.add(cloud)
+                    if drawOutliers:
+                        marginal_sample = self.sample[self.outlier_indices, i]
+                        data = ot.Sample(marginal_sample.getSize(), 2)
+                        data[:, 0] = marginal_sample
+                        cloud = ot.Cloud(data)
+                        cloud.setColor(self.outlier_color)
+                        graph.add(cloud)
 
                 elif i > j:  # lower corners
                     # Use a regular grid to compute probability response surface

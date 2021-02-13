@@ -157,6 +157,33 @@ class CheckProcessHDRAlgo(unittest.TestCase):
         otv.View(graph)
         return
 
+    def test_SquaredExponential(self):
+        # With 2 principal components
+        setup_HDRenv()
+        # Test with no outlier in the band
+        xmin = 0.0
+        step = 0.1
+        n = 100
+        timeGrid = ot.RegularGrid(xmin, step, n + 1)
+        amplitude = [7.0]
+        scale = [1.5]
+        covarianceModel = ot.SquaredExponential(scale, amplitude)
+        process = ot.GaussianProcess(covarianceModel, timeGrid)
+        nbTrajectories = 50
+        processSample = process.getSample(nbTrajectories)
+        # KL decomposition
+        reduction = othdr.KarhunenLoeveDimensionReductionAlgorithm(processSample, 2)
+        reduction.run()
+        reducedComponents = reduction.getReducedComponents()
+        
+        # Distribution fit in reduced space
+        ks = ot.KernelSmoothing()
+        reducedDistribution = ks.build(reducedComponents)
+        hdr = othdr.ProcessHighDensityRegionAlgorithm(processSample, reducedComponents, reducedDistribution, [0.95, 0.5])
+        hdr.run()
+        graph = hdr.draw()
+        otv.View(graph)
+
 
 if __name__ == "__main__":
     unittest.main()
