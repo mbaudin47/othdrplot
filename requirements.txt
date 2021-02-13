@@ -5,3 +5,4 @@ openturns>=1.16
 jupyterlab
 nbconvert
 notebook
+tqdm
