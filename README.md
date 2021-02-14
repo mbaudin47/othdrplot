@@ -7,27 +7,30 @@
 
 ## What is it?
 
-This project implements the Functional highest density region boxplot technique (Hyndman and Shang, 2009). 
+This project implements the functional highest density region boxplot technique (Hyndman and Shang, 2009). 
 
 When you have functional data (i.e. a set of curves), you will want to answer
 some questions such as:
 
-* What is the median curve?
+* What is the mode curve?
 * Can I draw a confidence interval?
 * Or, is there any outlier curves?
 
 This module allows you to do this: 
 
 ```
-hdr = ProcessHighDensityRegionAlgorithm(processSample)
-hdr.setOutlierAlpha(0.8)
-hdr.run()
-hdr.drawOutlierTrajectories()
+import othdrplot
+algo = othdrplot.ProcessHighDensityRegionAlgorithm(
+    processSample, reducedComponents, reducedDistribution, [0.8, 0.5]
+)
+algo.run()
+algo.drawOutlierTrajectories()
+algo.draw()
 ```
 
 The output is the following figure: 
 
-![npfda-elnino](doc/images/npfda-elnino-OutlierTrajectoryPlot.png)
+![npfda-elnino](doc/images/elnino-OutlierTrajectoryPlot.png)
 
 In the situation where a multivariate sample is given, the 
 HighDensityRegionAlgorithm allows to plot the 
@@ -35,14 +38,15 @@ regions where the density is associated with a
 given fraction of the population.
 
 ```
+import openturns
 # Estimate the distribution
 myks = ot.KernelSmoothing()
 distribution = myks.build(sample)
 # Create the HDR algorithm
-mydp = HighDensityRegionAlgorithm(sample, distribution)
-mydp.run()
-_ = mydp.drawContour(drawData=False, drawOutliers=True)
-```	
+algo = othdrplot.HighDensityRegionAlgorithm(sample, distribution)
+algo.run()
+algo.draw()
+```
 
 The output is the following figure: 
 
@@ -61,17 +65,31 @@ The dependencies are:
 - Python >= 2.7 or >= 3.3
 - [numpy] >= 0.10
 - [matplotlib] >= 1.5.3
-- [OpenTURNS] >= 1.14
+- [OpenTURNS] >= 1.16
 
 ### Installation
 
-Using the latest python version is prefered! Then to install::
+Using the latest python version is prefered! 
+
+To install from pip:
+
+```
+pip install othdrplot
+```
+
+To install from github:
 
 ```
 git clone git@github.com:mbaudin47/othdrplot.git
 cd othdrplot
 python setup.py install
 ```
+
+## Documentation
+
+[Introduction to high density region plots]: https://github.com/mbaudin47/othdrplot/tree/master/doc/documentation.ipynb
+
+A short introduction to the algorithm is provided in the [Introduction to high density region plots].
 
 ## Examples
 
@@ -101,7 +119,6 @@ Several examples are available in the [doc] directory.
 
 Three classes are provided:
 
-- `MatrixPlot` : For a multivariate sample, a matrix of scatter plots with the density on the diagonal.
 - `HighDensityRegionAlgorithm` : An algorithm to draw the density of a multivariate sample. 
 - `ProcessHighDensityRegionAlgorithm` : An algorithm to compute and draw the density of a multivariate process sample. 
 
@@ -126,7 +143,9 @@ This is an algorithm to draw the density of a process sample.
 - The main ingredients are the dimension reduction method and the method to estimate the density in the reduced space. 
 
 In the current implementation, the dimension reduction must be provided 
-and based on the KarhunenLoeve decomposition (which can be computed 
+and based on the Karhunen-Loeve decomposition (which can be computed 
 from the SVD or other methods as well). 
-The method to estimate the density in the reduced space is necessarily the 
-kernel smoothing in the current implementation. 
+The method to estimate the density in the reduced space can be  
+the kernel smoothing estimator or any other density estimation 
+method (e.g. a Gaussian mixture). 
+
