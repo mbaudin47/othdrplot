@@ -55,7 +55,7 @@ class CheckProcessHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(othdr.__path__[0], "data", "npfda-elnino.dat")
+        fname = os.path.join(othdr.__path__[0], "..", "tests", "data", "npfda-elnino.dat")
         processSample = readProcessSample(fname)
 
         # KL decomposition
@@ -100,7 +100,7 @@ class CheckProcessHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(othdr.__path__[0], "data", "npfda-elnino.dat")
+        fname = os.path.join(othdr.__path__[0], "..", "tests", "data", "npfda-elnino.dat")
         processSample = readProcessSample(fname)
 
         # KL decomposition
@@ -131,7 +131,7 @@ class CheckProcessHDRAlgo(unittest.TestCase):
         setup_HDRenv()
 
         # Dataset
-        fname = os.path.join(othdr.__path__[0], "data", "npfda-elnino.dat")
+        fname = os.path.join(othdr.__path__[0], "..", "tests", "data", "npfda-elnino.dat")
         processSample = readProcessSample(fname)
 
         # Customize the dimension reduction

@@ -291,3 +291,13 @@ class HighDensityRegionAlgorithm:
         """
         return self.outlierAlpha
 
+    def getOutlierPValue(self):
+        """
+        Return p-value of outlier level set. 
+
+        Returns
+        -------
+        outlierPvalue : float
+            The p-value of outlier level set.
+        """
+        return self.outlierPvalue
