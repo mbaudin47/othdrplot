@@ -5,7 +5,6 @@ Component to create HighDensityRegionAlgorithm.
 """
 import numpy as np
 import openturns as ot
-from .draw_univariate_sample import DrawUnivariateSampleDistribution
 
 
 class HighDensityRegionAlgorithm:

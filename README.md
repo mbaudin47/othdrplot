@@ -19,7 +19,8 @@ some questions such as:
 This module allows you to do this: 
 
 ```
-algo = othdr.ProcessHighDensityRegionAlgorithm(
+import othdrplot
+algo = othdrplot.ProcessHighDensityRegionAlgorithm(
     processSample, reducedComponents, reducedDistribution, [0.8, 0.5]
 )
 algo.run()
@@ -37,14 +38,15 @@ regions where the density is associated with a
 given fraction of the population.
 
 ```
+import openturns
 # Estimate the distribution
 myks = ot.KernelSmoothing()
 distribution = myks.build(sample)
 # Create the HDR algorithm
-algo = HighDensityRegionAlgorithm(sample, distribution)
+algo = othdrplot.HighDensityRegionAlgorithm(sample, distribution)
 algo.run()
 algo.draw()
-```	
+```
 
 The output is the following figure: 
 
@@ -82,6 +84,12 @@ git clone git@github.com:mbaudin47/othdrplot.git
 cd othdrplot
 python setup.py install
 ```
+
+## Documentation
+
+[Introduction to high density region plots]: https://github.com/mbaudin47/othdrplot/tree/master/doc/documentation.ipynb
+
+A short introduction to the algorithm is provided in the [Introduction to high density region plots].
 
 ## Examples
 
@@ -135,7 +143,9 @@ This is an algorithm to draw the density of a process sample.
 - The main ingredients are the dimension reduction method and the method to estimate the density in the reduced space. 
 
 In the current implementation, the dimension reduction must be provided 
-and based on the KarhunenLoeve decomposition (which can be computed 
+and based on the Karhunen-Loeve decomposition (which can be computed 
 from the SVD or other methods as well). 
-The method to estimate the density in the reduced space is necessarily the 
-kernel smoothing in the current implementation. 
+The method to estimate the density in the reduced space can be  
+the kernel smoothing estimator or any other density estimation 
+method (e.g. a Gaussian mixture). 
+
