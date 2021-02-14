@@ -121,6 +121,8 @@ Three classes are provided:
 
 - `HighDensityRegionAlgorithm` : An algorithm to draw the density of a multivariate sample. 
 - `ProcessHighDensityRegionAlgorithm` : An algorithm to compute and draw the density of a multivariate process sample. 
+- `KarhunenLoeveDimensionReductionAlgorithm` : Simplifies the dimension reduction 
+with Karhunen-Loève decomposition.
 
 ### The `HighDensityRegionAlgorithm` class
 
@@ -142,10 +144,9 @@ This is an algorithm to draw the density of a process sample.
 - Plots the projection of the trajectories in the reduced space, based on the `HighDensityRegionAlgorithm`. 
 - The main ingredients are the dimension reduction method and the method to estimate the density in the reduced space. 
 
-In the current implementation, the dimension reduction must be provided 
-and based on the Karhunen-Loeve decomposition (which can be computed 
-from the SVD or other methods as well). 
-The method to estimate the density in the reduced space can be  
+In the current implementation, the dimension reduction can be provided 
+on the Karhunen-Loeve decomposition (but other methods can be used). 
+The method to estimate the density in the reduced space can be 
 the kernel smoothing estimator or any other density estimation 
 method (e.g. a Gaussian mixture). 
 
