@@ -22,7 +22,7 @@ setup(
     keywords=("graphics"),
     version="2.2",
     packages=find_packages(),
-    install_requires=["numpy", "matplotlib", "openturns>=1.16"],
+    install_requires=["numpy", "matplotlib", "openturns>=1.17"],
     description="High Density Region plot",
     long_description=long_description,
     long_description_content_type="text/markdown",
