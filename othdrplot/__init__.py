@@ -12,4 +12,4 @@ __all__ = [
     "KarhunenLoeveDimensionReductionAlgorithm",
     "DrawUnivariateSampleDistribution"
 ]
-__version__ = "1.1"
+__version__ = "2.2"
